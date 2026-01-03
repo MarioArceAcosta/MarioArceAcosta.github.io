@@ -1,5 +1,5 @@
 ---
-title: "marioarceacosta.github.io"
+title: "MarioArceAcosta.github.io"
 ---
 
 This is a Quarto website.
