@@ -1,9 +1,16 @@
 ---
-title: "About"
+title: "My Portfolio Project"
+engine: knitr
 ---
 
-About this site
+```{r setup, include=FALSE}
+# This tells Quarto to use the environment we just made 
+library(reticulate) 
+use_virtualenv("stats-env", required = TRUE)
+```
 
-```{r}
-1 + 1
+```{python}
+import plotly.express as px
+fig = px.scatter(x=[1, 2, 3], y=[4, 1, 2])
+fig.show()
 ```
