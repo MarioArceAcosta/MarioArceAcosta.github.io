@@ -9,8 +9,8 @@
   {
     "objectID": "about.html",
     "href": "about.html",
-    "title": "About",
+    "title": "My Portfolio Project",
     "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "import plotly.express as px\nfig = px.scatter(x=[1, 2, 3], y=[4, 1, 2])\nfig.show()"
   }
 ]
