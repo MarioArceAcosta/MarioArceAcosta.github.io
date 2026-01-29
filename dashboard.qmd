@@ -1,5 +1,5 @@
 ---
-title: "Interactive Analytics"
+title: "Dashboard"
 engine: knitr
 format: 
   dashboard:
@@ -8,32 +8,26 @@ format:
 
 ```{r setup, include=FALSE}
 #| include: false
-#| output: false
 # 1. Force the correct path before anything else starts
 Sys.setenv(RETICULATE_PYTHON = "C:/Users/Mario Arce Acosta/OneDrive/Documents/.virtualenvs/stats-env/Scripts/python.exe")
-
 # 2. Load reticulate
 library(reticulate)
-
 # 3. Tell reticulate to strictly use your stats-env
 use_virtualenv("stats-env", required = TRUE)
-
 # 4. Install every missing piece of your "Tech Stack"
 # This fixes: ModuleNotFoundError and ImportError
 py_install(c("pandas", "numpy", "sqlalchemy", "psycopg2", "plotly"), 
            envname = "stats-env")
-
 # 5. Verify it worked
 py_config()
 ```
 
 ```{python}
 #| include: false
-#| output: false
-
 ###################FIRST QUERY#####################
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from sqlalchemy import create_engine
 
 # 1. Create the connection engine
@@ -49,12 +43,9 @@ SELECT
 FROM acs_immigration_data
 GROUP BY abv
 """
-
 df_noncit_state = pd.read_sql(noncit_count_state_query, engine)
 
-
 ###################SECOND QUERY#####################
-
 counts_query = """
 SELECT 
     edu_cat, 
@@ -68,7 +59,6 @@ SELECT
 FROM acs_immigration_data
 GROUP BY edu_cat, degfield_group, stem_deg, gov_worker, spanish_hispanic_latino, nonfluent, fem;
 """
-
 df_counts = pd.read_sql(counts_query, engine)
 ```
 
@@ -85,8 +75,8 @@ This dashboard analyzes labor market trends and immigration flows.
 ## Row {.fill}
 
 ```{python}
-#| output: true
-#| padding: 0
+#| echo: false
+#| include: false
 # Create a Choropleth Map with an Animation Slider for Years
 fig_map = px.choropleth(
     df_noncit_state,
@@ -98,22 +88,23 @@ fig_map = px.choropleth(
     color_continuous_scale="Viridis",
     title="Noncitizen Count by State"
 )
-
 fig_map.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
+fig_map
+```
+
+```{python}
+### Always important that code with plots has #| include: false in it, as well as this follow up chunk where the figure is explicitly called
+fig_map
 ```
 
 # Any bar chart
 
-## Row {.fill}
-
 ```{python}
-#| output: false
 #| echo: false
-#| padding: 0
-#| label: fig-demographics
-import plotly.graph_objects as go
-
+#| fig-show: hide
+#| include: false
 variables = ['edu_cat', 'degfield_group', 'stem_deg', 'gov_worker', 'spanish_hispanic_latino', 'nonfluent', 'fem']
+
 fig = go.Figure()
 
 # 1. Build a separate bar chart (trace) for every variable in your list
@@ -141,6 +132,7 @@ for i, var in enumerate(variables):
         args=[{"visible": visibility}, {"title": f"Count by {var.title()}"}]
     )
     buttons.append(button)
+
 # 3. Add the UI Menu to the Layout
 fig.update_layout(
     updatemenus=[dict(
@@ -153,10 +145,8 @@ fig.update_layout(
     xaxis_title="Category",
     yaxis_title="Total Count"
 )
-
 ```
 
 ```{python}
-#| output: true
 fig.show()
 ```
