@@ -900,8 +900,8 @@ Prediction  X0  X1
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="do">### You may use the following code to speed up code being ran (Use all cores except one)</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co">#cl &lt;- makePSOCKcluster(detectCores() - 1) </span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co">#registerDoParallel(cl)</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># cl &lt;- makePSOCKcluster(detectCores() - 1) </span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># registerDoParallel(cl)</span></span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(all_data<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely) <span class="ot">&lt;-</span> <span class="fu">make.names</span>(<span class="fu">levels</span>(all_data<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely))</span>
 <span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
@@ -1066,7 +1066,7 @@ Prediction  X0  X1
 <span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>rf.pr <span class="ot">=</span> <span class="fu">performance</span>(rf.prediction,<span class="st">"prec"</span>,<span class="st">"rec"</span>) <span class="co"># Precision-Recall curve</span></span>
 <span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="co">#stopCluster(cl) # Optional code part of parallel processing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="co"># stopCluster(cl) # Optional code part of parallel processing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 
@@ -1847,8 +1847,8 @@ Prediction  X0  X1
 <span id="cb46-306"><a href="#cb46-306" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-307"><a href="#cb46-307" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-308"><a href="#cb46-308" aria-hidden="true" tabindex="-1"></a><span class="do">### You may use the following code to speed up code being ran (Use all cores except one)</span></span>
-<span id="cb46-309"><a href="#cb46-309" aria-hidden="true" tabindex="-1"></a><span class="co">#cl &lt;- makePSOCKcluster(detectCores() - 1) </span></span>
-<span id="cb46-310"><a href="#cb46-310" aria-hidden="true" tabindex="-1"></a><span class="co">#registerDoParallel(cl)</span></span>
+<span id="cb46-309"><a href="#cb46-309" aria-hidden="true" tabindex="-1"></a><span class="co"># cl &lt;- makePSOCKcluster(detectCores() - 1) </span></span>
+<span id="cb46-310"><a href="#cb46-310" aria-hidden="true" tabindex="-1"></a><span class="co"># registerDoParallel(cl)</span></span>
 <span id="cb46-311"><a href="#cb46-311" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-312"><a href="#cb46-312" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(all_data<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely) <span class="ot">&lt;-</span> <span class="fu">make.names</span>(<span class="fu">levels</span>(all_data<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely))</span>
 <span id="cb46-313"><a href="#cb46-313" aria-hidden="true" tabindex="-1"></a></span>
@@ -1920,7 +1920,7 @@ Prediction  X0  X1
 <span id="cb46-379"><a href="#cb46-379" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-380"><a href="#cb46-380" aria-hidden="true" tabindex="-1"></a>rf.pr <span class="ot">=</span> <span class="fu">performance</span>(rf.prediction,<span class="st">"prec"</span>,<span class="st">"rec"</span>) <span class="co"># Precision-Recall curve</span></span>
 <span id="cb46-381"><a href="#cb46-381" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-382"><a href="#cb46-382" aria-hidden="true" tabindex="-1"></a><span class="co">#stopCluster(cl) # Optional code part of parallel processing</span></span>
+<span id="cb46-382"><a href="#cb46-382" aria-hidden="true" tabindex="-1"></a><span class="co"># stopCluster(cl) # Optional code part of parallel processing</span></span>
 <span id="cb46-383"><a href="#cb46-383" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
