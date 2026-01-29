@@ -1,6 +1,6 @@
 ---
 title: "Mario Arce Acosta"
-
+page-layout: full
 about:
   template: trestles
   image: media/Professional_headshot_suit.jpg
