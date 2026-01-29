@@ -12,7 +12,8 @@ website:
         text: Interactive Analytics
       - href: research.qmd
         text: Research
-      - href: about.qmd
+      - href: media/_Academic__Mario_CV.pdf
+        text: CV
 
 format:
   html:
