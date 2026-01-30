@@ -14,10 +14,14 @@ format:
     number-sections: true    # Adds "1.1, 1.2" structure for rigor
 ---
 
-
-# Libraries/Packages
+# Libraries
 
 ```{r Libraries}
+#| results: hold
+#| message: false
+#| warning: false 
+
+library(readr)
 library(dplyr)
 library(stargazer)
 library(caret)
@@ -36,18 +40,22 @@ library(ranger)
 # Loading Data
 
 ```{r Load raw data}
+#| message: false
+#| warning: false 
+
 data_path <- "G:/Shared drives/Undocu Research/Data"
 figures_path <- "G:/Shared drives/Undocu Research/Output/Figures"
 setwd(data_path)
 
-library(readr)
 sipp08_2 <- read_csv("(Step 1 output) Core_TM SIPP 2008 Wave 2.csv")
-View(sipp08_2)
 ```
 
 # SIPP Data Cleaning and Recoding
 
 ```{r Data preparation}
+#| message: false
+#| warning: false 
+
 sipp08_2 <- sipp08_2 %>%
   mutate(
     undocu_entry = as.factor(ifelse(timstat=="Other", 1, 0)),
@@ -165,7 +173,11 @@ variable_lists <- list(
 ```
 
 # Subsamples
+
 ```{r Dataset creation}
+#| message: false
+#| warning: false 
+
 # Create analysis datasets
 create_datasets <- function(data, variables) {
   datasets <- list()
@@ -194,16 +206,33 @@ create_datasets <- function(data, variables) {
   return(datasets)
 }
 
+
 # Create all analysis datasets
 all_data <- create_datasets(sipp08_2, variable_lists)
 
-setwd("G:/Shared drives/Undocu Research/Data")
-write.csv(sipp08_2, "SIPP08_2.csv", row.names = FALSE)
+# Create all college analysis datasets
+all_data_college <- lapply(all_data, function(x) {
+  if (is.data.frame(x) && "college" %in% names(x)) {
+    x %>% filter(college == 1)
+  } else {
+    x  
+  }
+})
+
+## Save for later use across documents
+saveRDS(sipp08_2, "data/sipp08_2.rds")
+saveRDS(all_data, "data/all_data.rds")
+saveRDS(all_data_college, "data/all_data_college.rds")
+saveRDS(variable_lists, "data/variable_lists.rds")
 ```
 
 # Logistic
 
 ```{r Logistic Regression}
+#| results: hold
+#| message: false
+#| warning: false 
+
 levels(all_data$sample$undocu_likely) <- make.names(levels(all_data$sample$undocu_likely))
 
 set.seed(1)
@@ -245,10 +274,13 @@ logistic.prediction = prediction(logistic.preds, test_logistic$undocu_likely)
 logistic.pr = performance(logistic.prediction,"prec","rec") # Precision-Recall curve
 ```
 
-
 # KNN
 
 ```{r KNN}
+#| results: hold
+#| message: false
+#| warning: false 
+
 set.seed(1)
 levels(all_data$knn$undocu_likely) <- make.names(levels(all_data$knn$undocu_likely))
 train_index_knn <- createDataPartition(all_data$knn$undocu_likely, p = 0.7, list = FALSE)
@@ -290,20 +322,16 @@ knn.pr = performance(knn.prediction,"prec","rec") # Precision-Recall curve
 
 -   The splitting rule to use during tree construction
 
--   and (2) typically have the largest impact on predictive accuracy and
-    should always be tuned. (3) and (4) tend to have marginal impact on
-    predictive accuracy but are still worth exploring. They also have
-    the ability to influence computational efficiency. (5) tends to have
-    the smallest impact on predictive accuracy and is used primarily to
-    increase computational efficiency.
-    
+-   and (2) typically have the largest impact on predictive accuracy and should always be tuned. (3) and (4) tend to have marginal impact on predictive accuracy but are still worth exploring. They also have the ability to influence computational efficiency. (5) tends to have the smallest impact on predictive accuracy and is used primarily to increase computational efficiency.
+
 # RF
 
 ```{r Random Forest}
 #| label: train-random-forest
 #| cache: true
-#| warning: false
-
+#| results: hold
+#| message: false
+#| warning: false 
 
 ### You may use the following code to speed up code being ran (Use all cores except one)
 # cl <- makePSOCKcluster(detectCores() - 1) 
@@ -381,4 +409,3 @@ rf.pr = performance(rf.prediction,"prec","rec") # Precision-Recall curve
 
 # stopCluster(cl) # Optional code part of parallel processing
 ```
-

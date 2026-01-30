@@ -1,0 +1,126 @@
+---
+title: "Leading ML Model"
+format: html
+---
+
+# Libraries
+```{r}
+#| results: hold
+#| message: false
+#| warning: false 
+
+library(gbm)      # For Gradient Boosting
+library(class)
+library(caTools)
+library(caret)
+library(ROCR)
+library(vip)  # For feature importance
+library(gridExtra)
+library(doParallel)
+```
+
+# Loading Data
+```{r}
+#| message: false
+#| warning: false 
+
+data_path <- "G:/Shared drives/Undocu Research/Data"
+figures_path <- "G:/Shared drives/Undocu Research/Output/Figures"
+
+sipp08_2 <- readRDS("data/sipp08_2.rds")
+all_data <- readRDS("data/all_data.rds")
+all_data_college <- readRDS("data/all_data_college.rds")
+variable_lists <- readRDS("data/variable_lists.rds")
+```
+
+# Gradient-Boosted Trees 
+## Full Training Sample
+
+```{r}
+#| label: train-gradient-boosting
+#| cache: true
+#| results: hold
+#| message: false
+#| warning: false 
+
+### You may use the following code to speed up code being ran (Use all cores except one)
+cl <- makePSOCKcluster(detectCores() - 1) 
+registerDoParallel(cl)
+
+set.seed(1)
+## Data partitioning for gbm library
+all_data_college$sample$undocu_likely <- as.numeric(all_data_college$sample$undocu_likely) - 1
+
+train_index_college <- createDataPartition(all_data_college$sample$undocu_likely, p = 0.7, list = FALSE)
+train_college <- all_data_college$sample[train_index_college, ]
+test_college <- all_data_college$sample[-train_index_college, ]
+
+college_gbm_model <- gbm(undocu_likely ~ age + fem + married + cit_spouse + medicaid + nonfluent + spanish_hispanic_latino + central_latino + bpl_asia + household_size + poverty + asian + black + white + other_race + employed + years_us + yrsed, data = train_college, 
+                 verbose = FALSE,
+                 cv.folds = 10,
+                 n.trees = 1766,
+                 shrinkage = 0.005, 
+                 interaction.depth = 6)
+
+
+## Model summary and optimal number of trees
+college_gbm_model
+
+optimal_trees_college <- gbm.perf(college_gbm_model, method = "cv", plot.it = FALSE)
+cat("Optimal number of trees:", optimal_trees_college, "\n")
+
+
+setwd(figures_path)
+## Feature importance
+college_gbm_feature_importance <- vip(college_gbm_model, num_features = 19, bar = FALSE)
+ggsave("college_gbm_feature_importance.png", college_gbm_feature_importance, width = 22, height = 16, units = "cm", dpi = 300)
+grid.arrange(college_gbm_feature_importance, nrow = 1)
+
+stopCluster(cl) # Optional code part of parallel processing
+```
+
+## College Training Sample
+
+```{r}
+#| label: train-gradient-boosting-college
+#| cache: true
+#| results: hold
+#| message: false
+#| warning: false 
+
+cl <- makePSOCKcluster(detectCores() - 1) 
+registerDoParallel(cl)
+
+set.seed(1)
+## Data partitioning for gbm library
+all_data_college <- readRDS("data/all_data_college.rds")
+all_data_college$sample$undocu_likely <- as.numeric(all_data_college$sample$undocu_likely)-1
+
+train_index_college <- createDataPartition(all_data_college$sample$undocu_likely, p = 0.7, list = FALSE)
+train_college <- all_data_college$sample[train_index_college, ]
+test_college <- all_data_college$sample[-train_index_college, ]
+
+college_gbm_model <- gbm(undocu_likely ~ age + fem + married + cit_spouse + medicaid + nonfluent + spanish_hispanic_latino + central_latino + bpl_asia + household_size + poverty + asian + black + white + other_race + employed + years_us + yrsed, data = train_college, 
+                 verbose = FALSE,
+                 cv.folds = 10,
+                 n.trees = 1766,
+                 shrinkage = 0.005, 
+                 interaction.depth = 6)
+
+
+## Model summary and optimal number of trees
+college_gbm_model
+
+optimal_trees_college <- gbm.perf(college_gbm_model, method = "cv", plot.it = FALSE)
+cat("Optimal number of trees:", optimal_trees_college, "\n")
+
+
+setwd(figures_path)
+## Feature importance
+college_gbm_feature_importance <- vip(college_gbm_model, num_features = 19, bar = FALSE)
+ggsave("college_gbm_feature_importance.png", college_gbm_feature_importance, width = 22, height = 16, units = "cm", dpi = 300)
+grid.arrange(college_gbm_feature_importance, nrow = 1)
+
+stopCluster(cl) # Optional code part of parallel processing
+on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
+```

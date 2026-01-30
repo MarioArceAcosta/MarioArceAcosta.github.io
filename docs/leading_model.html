@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Mario Arce Acosta</title>
+<title>Leading ML Model – Mario Arce Acosta</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -34,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
@@ -251,7 +287,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -287,53 +323,198 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#libraries" id="toc-libraries" class="nav-link active" data-scroll-target="#libraries">Libraries</a></li>
+  <li><a href="#loading-data" id="toc-loading-data" class="nav-link" data-scroll-target="#loading-data">Loading Data</a></li>
+  <li><a href="#gradient-boosted-trees" id="toc-gradient-boosted-trees" class="nav-link" data-scroll-target="#gradient-boosted-trees">Gradient-Boosted Trees</a>
+  <ul class="collapse">
+  <li><a href="#full-training-sample" id="toc-full-training-sample" class="nav-link" data-scroll-target="#full-training-sample">Full Training Sample</a></li>
+  <li><a href="#college-training-sample" id="toc-college-training-sample" class="nav-link" data-scroll-target="#college-training-sample">College Training Sample</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<div class="quarto-about-trestles column-page">
-  <div class="about-entity">
-    <img src="media/Professional_headshot_suit.jpg" class="about-image
-  rounded " style="width: 20em;">
+<main class="content" id="quarto-document-content">
+
+
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Mario Arce Acosta</h1>
+<h1 class="title">Leading ML Model</h1>
 </div>
-<div class="quarto-title-meta column-page">
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
   </div>
+  
+
+
 </header>
-    <div class="about-links">
-  <a href="https://www.linkedin.com/in/mario-arce-acosta/" class="about-link" rel="" target="">
-    <i class="bi bi-linkedin"></i>
-     <span class="about-link-text">LinkedIn</span>
-  </a>
-  <a href="https://github.com/MarioArceAcosta" class="about-link" rel="" target="">
-    <i class="bi bi-github"></i>
-     <span class="about-link-text">Github</span>
-  </a>
+
+
+<section id="libraries" class="level1">
+<h1>Libraries</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gbm)      <span class="co"># For Gradient Boosting</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(class)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caTools)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ROCR)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vip)  <span class="co"># For feature importance</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doParallel)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-  </div>
-  <div class="about-contents"><main class="content column-page" id="quarto-document-content">
-
-<p>Hello, nice to meet you! My name is Mario, and my academic background consists of a B.S. in Applied Mathematics/Economics and a Minor in Business Analytics. I am currently studying Statistics for a Master’s in Science program at the University of California, Davis. I am proud to state that I presented my research at the Population Association of America 2025 Annual Conference, and that I will be presenting research at the 2025 Association for Public Policy Analysis &amp; Management Conference!</p>
-<p>Some of the statistical analysis services I offer are:</p>
-<p>✅Linear/nonlinear regression, probability modeling (LPM, logistic)</p>
-<p>✅ A/B tests, T-tests, Chi-squared Tests, Hausman test, etc.</p>
-<p>✅Panel (longitudinal) data analysis (Random/fixed/mixed effects)</p>
-<p>✅Clustering, population weights, standardized coefficients</p>
-<p>✅Event study / Difference-in-Differences (DiD)</p>
-<p>✅Machine learning in R (logistic, KNN, Random Forests, etc.)</p>
-<p>I also offer the following services:</p>
-<p>✅ Tutoring (Statistics, Economics, and Mathematics)</p>
-<p>✅Consultations in data governance and dashboards</p>
-<p>Beyond college work and capstone projects (econometrics of Airbnb prices in Mexico using R; analysis of H-1B sponsor rates by industry type and location), I have also worked as a data analytics intern and as a research fellow (for which my research extended past the program). I have also taken courses in Coursera by IBM on data analysis (Python, Excel, AI), and have received certificates of completion.</p>
-<p>In a year-long data analytics intern position, I learned how to create and implement a database into our center’s initiative on analyzing academic technology usage. I reached out to technology vendors of the university, requesting data extracts and communicating with them on the interpretation of data. I streamlined data collection, and organized all data into a database that is still used at the center. I cleaned and prepared several spreadsheets with hundreds of thousands of rows within Google Sheets, and provided key metrics through dashboards and reports in Google Looker Studio. I connected this data and made it accessible through Slack. I reported on my progress through Slack, Asana, and Zoom meetings (disseminating findings through bi-weekly meetings). I implemented data governance policies and facilitated meetings on data governance. I wrote a document on data governance. I wrote, recorded, and hosted trainings for my colleagues in Looker Studio. Overall, I became an expert at Google Sheets, Looker Studio, and communicating data analyses through visualizations. Providing data-driven insights through story-telling.</p>
-
-
-</main></div>
+</section>
+<section id="loading-data" class="level1">
+<h1>Loading Data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data_path <span class="ot">&lt;-</span> <span class="st">"G:/Shared drives/Undocu Research/Data"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>figures_path <span class="ot">&lt;-</span> <span class="st">"G:/Shared drives/Undocu Research/Output/Figures"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>sipp08_2 <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"data/sipp08_2.rds"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>all_data <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"data/all_data.rds"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>all_data_college <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"data/all_data_college.rds"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>variable_lists <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"data/variable_lists.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
- <!-- /main -->
+</section>
+<section id="gradient-boosted-trees" class="level1">
+<h1>Gradient-Boosted Trees</h1>
+<section id="full-training-sample" class="level2">
+<h2 class="anchored" data-anchor-id="full-training-sample">Full Training Sample</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">### You may use the following code to speed up code being ran (Use all cores except one)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">&lt;-</span> <span class="fu">makePSOCKcluster</span>(<span class="fu">detectCores</span>() <span class="sc">-</span> <span class="dv">1</span>) </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoParallel</span>(cl)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Data partitioning for gbm library</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>train_index_college <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely, <span class="at">p =</span> <span class="fl">0.7</span>, <span class="at">list =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>train_college <span class="ot">&lt;-</span> all_data_college<span class="sc">$</span>sample[train_index_college, ]</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>test_college <span class="ot">&lt;-</span> all_data_college<span class="sc">$</span>sample[<span class="sc">-</span>train_index_college, ]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>college_gbm_model <span class="ot">&lt;-</span> <span class="fu">gbm</span>(undocu_likely <span class="sc">~</span> age <span class="sc">+</span> fem <span class="sc">+</span> married <span class="sc">+</span> cit_spouse <span class="sc">+</span> medicaid <span class="sc">+</span> nonfluent <span class="sc">+</span> spanish_hispanic_latino <span class="sc">+</span> central_latino <span class="sc">+</span> bpl_asia <span class="sc">+</span> household_size <span class="sc">+</span> poverty <span class="sc">+</span> asian <span class="sc">+</span> black <span class="sc">+</span> white <span class="sc">+</span> other_race <span class="sc">+</span> employed <span class="sc">+</span> years_us <span class="sc">+</span> yrsed, <span class="at">data =</span> train_college, </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">verbose =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">cv.folds =</span> <span class="dv">10</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n.trees =</span> <span class="dv">1766</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">shrinkage =</span> <span class="fl">0.005</span>, </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">interaction.depth =</span> <span class="dv">6</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="do">## Model summary and optimal number of trees</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>college_gbm_model</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>optimal_trees_college <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(college_gbm_model, <span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">plot.it =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Optimal number of trees:"</span>, optimal_trees_college, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(figures_path)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="do">## Feature importance</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>college_gbm_feature_importance <span class="ot">&lt;-</span> <span class="fu">vip</span>(college_gbm_model, <span class="at">num_features =</span> <span class="dv">19</span>, <span class="at">bar =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"college_gbm_feature_importance.png"</span>, college_gbm_feature_importance, <span class="at">width =</span> <span class="dv">22</span>, <span class="at">height =</span> <span class="dv">16</span>, <span class="at">units =</span> <span class="st">"cm"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(college_gbm_feature_importance, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/train-gradient-boosting-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stopCluster</span>(cl) <span class="co"># Optional code part of parallel processing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Distribution not specified, assuming bernoulli ...
+gbm(formula = undocu_likely ~ age + fem + married + cit_spouse + 
+    medicaid + nonfluent + spanish_hispanic_latino + central_latino + 
+    bpl_asia + household_size + poverty + asian + black + white + 
+    other_race + employed + years_us + yrsed, data = train_college, 
+    n.trees = 1766, interaction.depth = 6, shrinkage = 0.005, 
+    cv.folds = 10, verbose = FALSE)
+A gradient boosted model with bernoulli loss function.
+1766 iterations were performed.
+The best cross-validation iteration was 1764.
+There were 18 predictors of which 18 had non-zero influence.
+Optimal number of trees: 1764 </code></pre>
+</div>
+</div>
+</section>
+<section id="college-training-sample" class="level2">
+<h2 class="anchored" data-anchor-id="college-training-sample">College Training Sample</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">&lt;-</span> <span class="fu">makePSOCKcluster</span>(<span class="fu">detectCores</span>() <span class="sc">-</span> <span class="dv">1</span>) </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoParallel</span>(cl)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Data partitioning for gbm library</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>all_data_college <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"data/all_data_college.rds"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely)<span class="sc">-</span><span class="dv">1</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>train_index_college <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely, <span class="at">p =</span> <span class="fl">0.7</span>, <span class="at">list =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>train_college <span class="ot">&lt;-</span> all_data_college<span class="sc">$</span>sample[train_index_college, ]</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>test_college <span class="ot">&lt;-</span> all_data_college<span class="sc">$</span>sample[<span class="sc">-</span>train_index_college, ]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>college_gbm_model <span class="ot">&lt;-</span> <span class="fu">gbm</span>(undocu_likely <span class="sc">~</span> age <span class="sc">+</span> fem <span class="sc">+</span> married <span class="sc">+</span> cit_spouse <span class="sc">+</span> medicaid <span class="sc">+</span> nonfluent <span class="sc">+</span> spanish_hispanic_latino <span class="sc">+</span> central_latino <span class="sc">+</span> bpl_asia <span class="sc">+</span> household_size <span class="sc">+</span> poverty <span class="sc">+</span> asian <span class="sc">+</span> black <span class="sc">+</span> white <span class="sc">+</span> other_race <span class="sc">+</span> employed <span class="sc">+</span> years_us <span class="sc">+</span> yrsed, <span class="at">data =</span> train_college, </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">verbose =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">cv.folds =</span> <span class="dv">10</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n.trees =</span> <span class="dv">1766</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">shrinkage =</span> <span class="fl">0.005</span>, </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">interaction.depth =</span> <span class="dv">6</span>)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="do">## Model summary and optimal number of trees</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>college_gbm_model</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>optimal_trees_college <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(college_gbm_model, <span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">plot.it =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Optimal number of trees:"</span>, optimal_trees_college, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(figures_path)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="do">## Feature importance</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>college_gbm_feature_importance <span class="ot">&lt;-</span> <span class="fu">vip</span>(college_gbm_model, <span class="at">num_features =</span> <span class="dv">19</span>, <span class="at">bar =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"college_gbm_feature_importance.png"</span>, college_gbm_feature_importance, <span class="at">width =</span> <span class="dv">22</span>, <span class="at">height =</span> <span class="dv">16</span>, <span class="at">units =</span> <span class="st">"cm"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(college_gbm_feature_importance, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/train-gradient-boosting-college-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stopCluster</span>(cl) <span class="co"># Optional code part of parallel processing</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">on.exit</span>(<span class="fu">try</span>(parallel<span class="sc">::</span><span class="fu">stopCluster</span>(cl), <span class="at">silent =</span> <span class="cn">TRUE</span>), <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Distribution not specified, assuming bernoulli ...
+gbm(formula = undocu_likely ~ age + fem + married + cit_spouse + 
+    medicaid + nonfluent + spanish_hispanic_latino + central_latino + 
+    bpl_asia + household_size + poverty + asian + black + white + 
+    other_race + employed + years_us + yrsed, data = train_college, 
+    n.trees = 1766, interaction.depth = 6, shrinkage = 0.005, 
+    cv.folds = 10, verbose = FALSE)
+A gradient boosted model with bernoulli loss function.
+1766 iterations were performed.
+The best cross-validation iteration was 1764.
+There were 18 predictors of which 18 had non-zero influence.
+Optimal number of trees: 1764 </code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     // Ensure there is a toggle, if there isn't float one in the top right
@@ -349,6 +530,13 @@ ul.task-list li input[type="checkbox"] {
       window.document.body.appendChild(a);
     }
     setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     

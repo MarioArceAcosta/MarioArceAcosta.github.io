@@ -10,8 +10,13 @@ website:
         text: Home
       - href: dashboard.qmd
         text: Interactive Analytics
-      - href: research.qmd
-        text: Research
+      - text: "My Projects"       # The Header Name (e.g., 'Research', 'Portfolio')
+        menu:
+        - href: research.qmd
+          text: ML Research
+        - text: "---"  # <--- This creates a horizontal divider line
+        - href: leading_model.qmd
+          text: ML Leading Model
       - href: media/_Academic__Mario_CV.pdf
         text: CV
 
