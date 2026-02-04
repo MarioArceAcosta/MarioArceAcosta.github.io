@@ -10,7 +10,7 @@ website:
         text: Home
       - href: dashboard.qmd
         text: Interactive Analytics
-      - text: "My Projects"       # The Header Name (e.g., 'Research', 'Portfolio')
+      - text: "Research"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
         - href: research.qmd
           text: ML Research

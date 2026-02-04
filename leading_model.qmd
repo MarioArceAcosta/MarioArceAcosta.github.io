@@ -4,6 +4,7 @@ format: html
 ---
 
 # Libraries
+
 ```{r}
 #| results: hold
 #| message: false
@@ -20,6 +21,7 @@ library(doParallel)
 ```
 
 # Loading Data
+
 ```{r}
 #| message: false
 #| warning: false 
@@ -33,7 +35,8 @@ all_data_college <- readRDS("data/all_data_college.rds")
 variable_lists <- readRDS("data/variable_lists.rds")
 ```
 
-# Gradient-Boosted Trees 
+# Gradient-Boosted Trees
+
 ## Full Training Sample
 
 ```{r}
