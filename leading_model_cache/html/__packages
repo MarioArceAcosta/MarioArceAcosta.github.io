@@ -10,3 +10,5 @@ gridExtra
 foreach
 iterators
 doParallel
+dplyr
+xtable

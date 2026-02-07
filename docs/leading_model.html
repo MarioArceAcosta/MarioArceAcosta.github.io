@@ -338,6 +338,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#full-training-sample" id="toc-full-training-sample" class="nav-link" data-scroll-target="#full-training-sample">Full Training Sample</a></li>
   <li><a href="#college-training-sample" id="toc-college-training-sample" class="nav-link" data-scroll-target="#college-training-sample">College Training Sample</a></li>
   </ul></li>
+  <li><a href="#gbm-performance" id="toc-gbm-performance" class="nav-link" data-scroll-target="#gbm-performance">GBM Performance</a>
+  <ul class="collapse">
+  <li><a href="#p-quartiles-and-thresholds" id="toc-p-quartiles-and-thresholds" class="nav-link" data-scroll-target="#p-quartiles-and-thresholds">P Quartiles and Thresholds</a></li>
+  <li><a href="#precision-recall-curves-full-to-full-full-to-college-college-to-college" id="toc-precision-recall-curves-full-to-full-full-to-college-college-to-college" class="nav-link" data-scroll-target="#precision-recall-curves-full-to-full-full-to-college-college-to-college">Precision-Recall Curves (Full to Full, Full to College, College to College)</a></li>
+  <li><a href="#demographic-precision-recall-curve-gbm-library-figure-3" id="toc-demographic-precision-recall-curve-gbm-library-figure-3" class="nav-link" data-scroll-target="#demographic-precision-recall-curve-gbm-library-figure-3">Demographic Precision-Recall Curve (GBM Library; Figure 3)</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -367,14 +373,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="libraries" class="level1">
 <h1>Libraries</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gbm)      <span class="co"># For Gradient Boosting</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(class)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caTools)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ROCR)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vip)  <span class="co"># For feature importance</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doParallel)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gbm)      <span class="co"># For Gradient Boosting</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(class)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caTools)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ROCR)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vip)  <span class="co"># For feature importance</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doParallel)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xtable)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="loading-data" class="level1">
@@ -400,32 +408,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Data partitioning for gbm library</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely) <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>train_index_college <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(all_data_college<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely, <span class="at">p =</span> <span class="fl">0.7</span>, <span class="at">list =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>train_college <span class="ot">&lt;-</span> all_data_college<span class="sc">$</span>sample[train_index_college, ]</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>test_college <span class="ot">&lt;-</span> all_data_college<span class="sc">$</span>sample[<span class="sc">-</span>train_index_college, ]</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>college_gbm_model <span class="ot">&lt;-</span> <span class="fu">gbm</span>(undocu_likely <span class="sc">~</span> age <span class="sc">+</span> fem <span class="sc">+</span> married <span class="sc">+</span> cit_spouse <span class="sc">+</span> medicaid <span class="sc">+</span> nonfluent <span class="sc">+</span> spanish_hispanic_latino <span class="sc">+</span> central_latino <span class="sc">+</span> bpl_asia <span class="sc">+</span> household_size <span class="sc">+</span> poverty <span class="sc">+</span> asian <span class="sc">+</span> black <span class="sc">+</span> white <span class="sc">+</span> other_race <span class="sc">+</span> employed <span class="sc">+</span> years_us <span class="sc">+</span> yrsed, <span class="at">data =</span> train_college, </span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">verbose =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">cv.folds =</span> <span class="dv">10</span>,</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n.trees =</span> <span class="dv">1766</span>,</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">shrinkage =</span> <span class="fl">0.005</span>, </span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">interaction.depth =</span> <span class="dv">6</span>)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>control_up <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">method =</span> <span class="st">"cv"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">number =</span> <span class="dv">10</span>,  </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">summaryFunction =</span> twoClassSummary,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">sampling =</span> <span class="st">"up"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="do">## Data partitioning for caret library</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(all_data<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely) <span class="ot">&lt;-</span> <span class="fu">make.names</span>(<span class="fu">levels</span>(all_data<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely))</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>train_index_gbm <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(all_data<span class="sc">$</span>sample<span class="sc">$</span>undocu_likely, <span class="at">p =</span> <span class="fl">0.7</span>, <span class="at">list =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>train_gbm <span class="ot">&lt;-</span> all_data<span class="sc">$</span>sample[train_index_gbm, ]</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>test_gbm <span class="ot">&lt;-</span> all_data<span class="sc">$</span>sample[<span class="sc">-</span>train_index_gbm, ]</span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="do">## Model summary and optimal number of trees</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>college_gbm_model</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>optimal_trees_college <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(college_gbm_model, <span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">plot.it =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Optimal number of trees:"</span>, optimal_trees_college, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>train_gbm_num <span class="ot">&lt;-</span>  train_gbm</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>train_gbm_num<span class="sc">$</span>undocu_likely <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(train_gbm<span class="sc">$</span>undocu_likely) <span class="sc">-</span> <span class="dv">1</span>      </span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>test_gbm_num <span class="ot">&lt;-</span>  test_gbm</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>test_gbm_num<span class="sc">$</span>undocu_likely <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(test_gbm<span class="sc">$</span>undocu_likely) <span class="sc">-</span> <span class="dv">1</span> </span>
 <span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(figures_path)</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="do">## Feature importance</span></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>college_gbm_feature_importance <span class="ot">&lt;-</span> <span class="fu">vip</span>(college_gbm_model, <span class="at">num_features =</span> <span class="dv">19</span>, <span class="at">bar =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"college_gbm_feature_importance.png"</span>, college_gbm_feature_importance, <span class="at">width =</span> <span class="dv">22</span>, <span class="at">height =</span> <span class="dv">16</span>, <span class="at">units =</span> <span class="st">"cm"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(college_gbm_feature_importance, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>gbm_model <span class="ot">&lt;-</span> <span class="fu">gbm</span>(undocu_likely <span class="sc">~</span> age <span class="sc">+</span> fem <span class="sc">+</span> married <span class="sc">+</span> cit_spouse <span class="sc">+</span> medicaid <span class="sc">+</span> nonfluent <span class="sc">+</span> spanish_hispanic_latino <span class="sc">+</span> central_latino <span class="sc">+</span> bpl_asia <span class="sc">+</span> household_size <span class="sc">+</span> poverty <span class="sc">+</span> asian <span class="sc">+</span> black <span class="sc">+</span> white <span class="sc">+</span> other_race <span class="sc">+</span> employed <span class="sc">+</span> years_us <span class="sc">+</span> yrsed, <span class="at">data =</span> train_gbm_num, </span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                 <span class="at">verbose =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>                 <span class="at">cv.folds =</span> <span class="dv">10</span>,</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n.trees =</span> <span class="dv">1766</span>,</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>                 <span class="at">shrinkage =</span> <span class="fl">0.005</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>                 <span class="at">interaction.depth =</span> <span class="dv">6</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="do">## Model summary and optimal number of trees</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>gbm_model</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>optimal_trees_gbm_two <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(gbm_model, <span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">plot.it =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Optimal number of trees:"</span>, optimal_trees_gbm_two, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(figures_path)</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="do">## Feature importance</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>feature_importance_gbm <span class="ot">&lt;-</span> <span class="fu">vip</span>(gbm_model, <span class="at">num_features =</span> <span class="dv">19</span>, <span class="at">bar =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"gbm_feature_importance.png"</span>, feature_importance_gbm, <span class="at">width =</span> <span class="dv">22</span>, <span class="at">height =</span> <span class="dv">16</span>, <span class="at">units =</span> <span class="st">"cm"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(feature_importance_gbm, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -439,14 +461,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 gbm(formula = undocu_likely ~ age + fem + married + cit_spouse + 
     medicaid + nonfluent + spanish_hispanic_latino + central_latino + 
     bpl_asia + household_size + poverty + asian + black + white + 
-    other_race + employed + years_us + yrsed, data = train_college, 
+    other_race + employed + years_us + yrsed, data = train_gbm_num, 
     n.trees = 1766, interaction.depth = 6, shrinkage = 0.005, 
     cv.folds = 10, verbose = FALSE)
 A gradient boosted model with bernoulli loss function.
 1766 iterations were performed.
-The best cross-validation iteration was 1764.
+The best cross-validation iteration was 1765.
 There were 18 predictors of which 18 had non-zero influence.
-Optimal number of trees: 1764 </code></pre>
+Optimal number of trees: 1765 </code></pre>
 </div>
 </div>
 </section>
@@ -508,6 +530,579 @@ The best cross-validation iteration was 1764.
 There were 18 predictors of which 18 had non-zero influence.
 Optimal number of trees: 1764 </code></pre>
 </div>
+</div>
+</section>
+</section>
+<section id="gbm-performance" class="level1">
+<h1>GBM Performance</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># GBM (FUll to Full) Library Performance</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Metrics for Figure 2 comparison (gbm library model)</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Make predictions on test set</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>gbm.pred <span class="ot">=</span> <span class="fu">predict</span>(gbm_model, <span class="at">newdata =</span> test_gbm_num, <span class="at">type =</span> <span class="st">"response"</span>, <span class="at">n.trees =</span> optimal_trees_gbm_two)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create prediction object for ROCR</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>gbm.prediction <span class="ot">=</span> <span class="fu">prediction</span>(gbm.pred, test_gbm_num<span class="sc">$</span>undocu_likely)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Get raw predictions (class labels)</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>gbm.predict <span class="ot">=</span> <span class="fu">predict</span>(gbm_model, <span class="at">newdata =</span> test_gbm_num, <span class="at">n.trees=</span>optimal_trees_gbm_two)  <span class="co"># Class predictions</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>gbm.roc <span class="ot">=</span> <span class="fu">performance</span>(gbm.prediction,<span class="st">"tpr"</span>,<span class="st">"fpr"</span>)   <span class="co"># ROC curve </span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>gbm.pr <span class="ot">=</span> <span class="fu">performance</span>(gbm.prediction,<span class="st">"prec"</span>,<span class="st">"rec"</span>) <span class="co"># Precision-Recall curve</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>gbm.auc <span class="ot">&lt;-</span> <span class="fu">performance</span>(gbm.prediction,<span class="st">"auc"</span>)<span class="sc">@</span>y.values[[<span class="dv">1</span>]] <span class="co"># AUC value</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>gbm_auc_pr <span class="ot">&lt;-</span> <span class="fu">trapz</span>(</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(gbm.pr<span class="sc">@</span>x.values)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>], </span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(gbm.pr<span class="sc">@</span>y.values)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>gbm_performance <span class="ot">&lt;-</span> gbm.pr</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gbm.roc, <span class="at">main =</span> <span class="st">"ROC Curve"</span>, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>) <span class="co">#PLOT EACH ON A SINGLE GRAPH FOR ROC</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">0</span>, <span class="at">b =</span> <span class="dv">1</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gbm.pr) <span class="co"># plot Precision-Recall curve</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/unnamed-chunk-3-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Optimal number of trees:"</span>, optimal_trees_gbm_two, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"AUC-ROC:"</span>, <span class="fu">round</span>(gbm.auc, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"AUC-PR:"</span>, <span class="fu">round</span>(gbm_auc_pr, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>gbm_predicted_class <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(gbm.pred <span class="sc">&gt;</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Predicted =</span> gbm_predicted_class, <span class="at">Actual =</span> test_gbm_num<span class="sc">$</span>undocu_likely)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># GBM (FUll to College) Library Performance</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="do">## Metrics for Figure 2 comparison (gbm library model)</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Make predictions on test set</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>gbm.pred_fc <span class="ot">=</span> <span class="fu">predict</span>(gbm_model, <span class="at">newdata =</span> test_college, <span class="at">type =</span> <span class="st">"response"</span>, <span class="at">n.trees =</span> optimal_trees_gbm_two)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Create prediction object for ROCR</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>gbm.prediction_fc <span class="ot">=</span> <span class="fu">prediction</span>(gbm.pred_fc, test_college<span class="sc">$</span>undocu_likely)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Get raw predictions (class labels)</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>gbm.predict_fc <span class="ot">=</span> <span class="fu">predict</span>(gbm_model, <span class="at">newdata =</span> test_college, <span class="at">n.trees=</span>optimal_trees_gbm_two)  <span class="co"># Class predictions</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>gbm.roc_fc <span class="ot">=</span> <span class="fu">performance</span>(gbm.prediction_fc,<span class="st">"tpr"</span>,<span class="st">"fpr"</span>)   <span class="co"># ROC curve </span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>gbm.pr_fc <span class="ot">=</span> <span class="fu">performance</span>(gbm.prediction_fc,<span class="st">"prec"</span>,<span class="st">"rec"</span>) <span class="co"># Precision-Recall curve</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>gbm.auc_fc <span class="ot">&lt;-</span> <span class="fu">performance</span>(gbm.prediction_fc,<span class="st">"auc"</span>)<span class="sc">@</span>y.values[[<span class="dv">1</span>]] <span class="co"># AUC value</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>gbm_auc_pr_fc <span class="ot">&lt;-</span> <span class="fu">trapz</span>(</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(gbm.pr_fc<span class="sc">@</span>x.values)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>], </span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(gbm.pr_fc<span class="sc">@</span>y.values)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>gbm_performance_fc <span class="ot">&lt;-</span> gbm.pr_fc</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gbm.roc_fc, <span class="at">main =</span> <span class="st">"ROC Curve"</span>, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>) <span class="co">#PLOT EACH ON A SINGLE GRAPH FOR ROC</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">0</span>, <span class="at">b =</span> <span class="dv">1</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/unnamed-chunk-3-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gbm.pr_fc) <span class="co"># plot Precision-Recall curve</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/unnamed-chunk-3-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Optimal number of trees:"</span>, optimal_trees_gbm_two, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"AUC-ROC:"</span>, <span class="fu">round</span>(gbm.auc_fc, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"AUC-PR:"</span>, <span class="fu">round</span>(gbm_auc_pr_fc, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>gbm_predicted_class_fc <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(gbm.pred_fc <span class="sc">&gt;</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Predicted =</span> gbm_predicted_class_fc, <span class="at">Actual =</span> test_college<span class="sc">$</span>undocu_likely)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># GBM (College to College) Library Performance</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="do">## Metrics for Figure 2 comparison (gbm library model)</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Make predictions on test set</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>gbm.pred_cc <span class="ot">=</span> <span class="fu">predict</span>(college_gbm_model, <span class="at">newdata =</span> test_college, <span class="at">type =</span> <span class="st">"response"</span>, <span class="at">n.trees =</span> optimal_trees_college)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Create prediction object for ROCR</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>gbm.prediction_cc <span class="ot">=</span> <span class="fu">prediction</span>(gbm.pred_cc, test_college<span class="sc">$</span>undocu_likely)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Get raw predictions (class labels)</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>gbm.predict_cc <span class="ot">=</span> <span class="fu">predict</span>(college_gbm_model, <span class="at">newdata =</span> test_college, <span class="at">n.trees=</span>optimal_trees_college)  <span class="co"># Class predictions</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>gbm.roc_cc <span class="ot">=</span> <span class="fu">performance</span>(gbm.prediction_cc,<span class="st">"tpr"</span>,<span class="st">"fpr"</span>)   <span class="co"># ROC curve </span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>gbm.pr_cc <span class="ot">=</span> <span class="fu">performance</span>(gbm.prediction_cc,<span class="st">"prec"</span>,<span class="st">"rec"</span>) <span class="co"># Precision-Recall curve</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>gbm.auc_cc <span class="ot">&lt;-</span> <span class="fu">performance</span>(gbm.prediction_cc,<span class="st">"auc"</span>)<span class="sc">@</span>y.values[[<span class="dv">1</span>]] <span class="co"># AUC value</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>gbm_auc_pr_cc <span class="ot">&lt;-</span> <span class="fu">trapz</span>(</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(gbm.pr_cc<span class="sc">@</span>x.values)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>], </span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(gbm.pr_cc<span class="sc">@</span>y.values)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>gbm_performance_cc <span class="ot">&lt;-</span> gbm.pr_cc</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gbm.roc_cc, <span class="at">main =</span> <span class="st">"ROC Curve"</span>, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>) <span class="co">#PLOT EACH ON A SINGLE GRAPH FOR ROC</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">0</span>, <span class="at">b =</span> <span class="dv">1</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/unnamed-chunk-3-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gbm.pr_cc) <span class="co"># plot Precision-Recall curve</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="leading_model_files/figure-html/unnamed-chunk-3-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Optimal number of trees:"</span>, optimal_trees_college, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"AUC-ROC:"</span>, <span class="fu">round</span>(gbm.auc_cc, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"AUC-PR:"</span>, <span class="fu">round</span>(gbm_auc_pr_cc, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>gbm_predicted_class_cc <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(gbm.pred_cc <span class="sc">&gt;</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Predicted =</span> gbm_predicted_class_cc, <span class="at">Actual =</span> test_college<span class="sc">$</span>undocu_likely)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimal number of trees: 1765 
+AUC-ROC: 0.7384 
+AUC-PR: 0.5198 
+         Actual
+Predicted   0   1
+        0 897 294
+        1 114 147
+Optimal number of trees: 1765 
+AUC-ROC: 0.7835 
+AUC-PR: 0.6044 
+         Actual
+Predicted   0   1
+        0 927 273
+        1  86 166
+Optimal number of trees: 1764 
+AUC-ROC: 0.7353 
+AUC-PR: 0.5258 
+         Actual
+Predicted   0   1
+        0 907 298
+        1 106 141</code></pre>
+</div>
+</div>
+<section id="p-quartiles-and-thresholds" class="level2">
+<h2 class="anchored" data-anchor-id="p-quartiles-and-thresholds">P Quartiles and Thresholds</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>test_gbm_num<span class="sc">$</span>p <span class="ot">=</span> <span class="fu">predict</span>(gbm_model, <span class="at">newdata =</span> test_gbm_num, <span class="at">type =</span> <span class="st">"response"</span>, <span class="at">n.trees =</span> optimal_trees_gbm_two)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>test_college<span class="sc">$</span>p <span class="ot">=</span> <span class="fu">predict</span>(gbm_model, <span class="at">newdata =</span> test_college, <span class="at">type =</span> <span class="st">"response"</span>, <span class="at">n.trees =</span> optimal_trees_gbm_two)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create quartiles based on probability magnitude</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>test_gbm_num<span class="sc">$</span>p_quartiles <span class="ot">&lt;-</span> <span class="fu">cut</span>(test_gbm_num<span class="sc">$</span>p, </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">breaks =</span> <span class="fu">quantile</span>(test_gbm_num<span class="sc">$</span>p, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>)), </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Q1"</span>, <span class="st">"Q2"</span>, <span class="st">"Q3"</span>, <span class="st">"Q4"</span>), </span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">include.lowest =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>test_college<span class="sc">$</span>p_quartiles <span class="ot">&lt;-</span> <span class="fu">cut</span>(test_college<span class="sc">$</span>p, </span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">breaks =</span> <span class="fu">quantile</span>(test_college<span class="sc">$</span>p, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>)), </span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Q1"</span>, <span class="st">"Q2"</span>, <span class="st">"Q3"</span>, <span class="st">"Q4"</span>), </span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">include.lowest =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the distributions</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(test_gbm_num<span class="sc">$</span>p_quartiles)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ Q1  Q2  Q3  Q4 
+363 363 363 363 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(test_college<span class="sc">$</span>p_quartiles)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ Q1  Q2  Q3  Q4 
+363 363 363 363 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Proportion of undocu_likely in each quartiles</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>quartiles_table_gbm <span class="ot">&lt;-</span> test_gbm_num <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(p_quartiles) <span class="sc">%&gt;%</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> <span class="fu">sum</span>(undocu_likely <span class="sc">==</span> <span class="dv">1</span>),</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">actual_proportion =</span> (count <span class="sc">/</span> n)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>quartiles_table_college <span class="ot">&lt;-</span> test_college <span class="sc">%&gt;%</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(p_quartiles) <span class="sc">%&gt;%</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> <span class="fu">sum</span>(undocu_likely <span class="sc">==</span> <span class="dv">1</span>),</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">actual_proportion =</span> (count <span class="sc">/</span> n)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="fu">xtable</span>(quartiles_table_gbm, <span class="at">digits=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>% latex table generated in R 4.5.2 by xtable 1.8-4 package
+% Sat Feb  7 00:05:16 2026
+\begin{table}[ht]
+\centering
+\begin{tabular}{rlrrr}
+  \hline
+ &amp; p\_quartiles &amp; count &amp; n &amp; actual\_proportion \\ 
+  \hline
+1 &amp; Q1 &amp;    35 &amp;   363 &amp; 0.0964 \\ 
+  2 &amp; Q2 &amp;    75 &amp;   363 &amp; 0.2066 \\ 
+  3 &amp; Q3 &amp;   136 &amp;   363 &amp; 0.3747 \\ 
+  4 &amp; Q4 &amp;   195 &amp;   363 &amp; 0.5372 \\ 
+   \hline
+\end{tabular}
+\end{table}</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(quartiles_table_gbm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 4
+  p_quartiles count     n actual_proportion
+  &lt;fct&gt;       &lt;int&gt; &lt;int&gt;             &lt;dbl&gt;
+1 Q1             35   363            0.0964
+2 Q2             75   363            0.207 
+3 Q3            136   363            0.375 
+4 Q4            195   363            0.537 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">xtable</span>(quartiles_table_college, <span class="at">digits=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>% latex table generated in R 4.5.2 by xtable 1.8-4 package
+% Sat Feb  7 00:05:16 2026
+\begin{table}[ht]
+\centering
+\begin{tabular}{rlrrr}
+  \hline
+ &amp; p\_quartiles &amp; count &amp; n &amp; actual\_proportion \\ 
+  \hline
+1 &amp; Q1 &amp;    23 &amp;   363 &amp; 0.0634 \\ 
+  2 &amp; Q2 &amp;    74 &amp;   363 &amp; 0.2039 \\ 
+  3 &amp; Q3 &amp;   119 &amp;   363 &amp; 0.3278 \\ 
+  4 &amp; Q4 &amp;   223 &amp;   363 &amp; 0.6143 \\ 
+   \hline
+\end{tabular}
+\end{table}</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(quartiles_table_college)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 4
+  p_quartiles count     n actual_proportion
+  &lt;fct&gt;       &lt;int&gt; &lt;int&gt;             &lt;dbl&gt;
+1 Q1             23   363            0.0634
+2 Q2             74   363            0.204 
+3 Q3            119   363            0.328 
+4 Q4            223   363            0.614 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>top_75_sample_num <span class="ot">&lt;-</span> test_gbm_num <span class="sc">%&gt;%</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(undocu_likely <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(p)) <span class="sc">%&gt;%</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">rank =</span> <span class="fu">row_number</span>(),</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cumulative_p =</span> rank <span class="sc">/</span> <span class="fu">n</span>(),</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">top_75 =</span> cumulative_p <span class="sc">&lt;=</span> <span class="fl">0.75</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(top_75<span class="sc">==</span><span class="cn">TRUE</span>)</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>threshold_75_num <span class="ot">&lt;-</span> <span class="fu">min</span>(top_75_sample_num<span class="sc">$</span>p)</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>undocu_test_num <span class="ot">&lt;-</span> test_gbm_num <span class="sc">%&gt;%</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(undocu_likely <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(p))</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Create GBM high recall (p&gt;threshold), high probability (75% of actual), low probability (Q1)</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>test_gbm_num<span class="sc">$</span>predicted_class <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(test_gbm_num<span class="sc">$</span>p <span class="sc">&gt;=</span> threshold_75_num, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>quartile_thresholds_gbm <span class="ot">&lt;-</span> <span class="fu">quantile</span>(undocu_test_num<span class="sc">$</span>p, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>))</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(quartile_thresholds_gbm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        0%        25%        50%        75%       100% 
+0.08044671 0.27554476 0.41349639 0.53716540 0.79673260 </code></pre>
+</div>
+</div>
+</section>
+<section id="precision-recall-curves-full-to-full-full-to-college-college-to-college" class="level2">
+<h2 class="anchored" data-anchor-id="precision-recall-curves-full-to-full-full-to-college-college-to-college">Precision-Recall Curves (Full to Full, Full to College, College to College)</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(figures_path)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co"># PREPARE PRECISION-RECALL DATA FOR ALL MODELS</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Start with Full to Full predictions as baseline</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>gbm_pr_data_ff <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">recall =</span> <span class="fu">unlist</span>(gbm.pr<span class="sc">@</span>x.values), </span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">precision =</span> <span class="fu">unlist</span>(gbm.pr<span class="sc">@</span>y.values)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Interpolate other models to match boosted trees recall values</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>gbm_pr_data_fc <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">recall =</span> <span class="fu">approx</span>(<span class="fu">unlist</span>(gbm.pr_fc<span class="sc">@</span>x.values), <span class="fu">unlist</span>(gbm.pr_fc<span class="sc">@</span>y.values), </span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">xout =</span> gbm_pr_data_ff<span class="sc">$</span>recall)<span class="sc">$</span>x,</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">precision =</span> <span class="fu">approx</span>(<span class="fu">unlist</span>(gbm.pr_fc<span class="sc">@</span>x.values), <span class="fu">unlist</span>(gbm.pr_fc<span class="sc">@</span>y.values), </span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>                    <span class="at">xout =</span> gbm_pr_data_ff<span class="sc">$</span>recall)<span class="sc">$</span>y</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm):
+collapsing to unique 'x' values
+Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm):
+collapsing to unique 'x' values</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Interpolate other models to match boosted trees recall values</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>gbm_pr_data_cc <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">recall =</span> <span class="fu">approx</span>(<span class="fu">unlist</span>(gbm.pr_cc<span class="sc">@</span>x.values), <span class="fu">unlist</span>(gbm.pr_cc<span class="sc">@</span>y.values), </span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">xout =</span> gbm_pr_data_ff<span class="sc">$</span>recall)<span class="sc">$</span>x,</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">precision =</span> <span class="fu">approx</span>(<span class="fu">unlist</span>(gbm.pr_cc<span class="sc">@</span>x.values), <span class="fu">unlist</span>(gbm.pr_cc<span class="sc">@</span>y.values), </span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">xout =</span> gbm_pr_data_ff<span class="sc">$</span>recall)<span class="sc">$</span>y</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm):
+collapsing to unique 'x' values
+Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm):
+collapsing to unique 'x' values</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># COMBINE ALL DATA</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>all_pr_data <span class="ot">&lt;-</span> gbm_pr_data_ff</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Add precision values for other models</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>all_pr_data<span class="sc">$</span>gbm_precision_fc <span class="ot">&lt;-</span> gbm_pr_data_fc<span class="sc">$</span>precision</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>all_pr_data<span class="sc">$</span>gbm_precision_cc <span class="ot">&lt;-</span> gbm_pr_data_cc<span class="sc">$</span>precision</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate precision differences relative to boosted trees</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>all_pr_data<span class="sc">$</span>fc_precision_difference <span class="ot">&lt;-</span> gbm_pr_data_fc<span class="sc">$</span>precision <span class="sc">-</span> all_pr_data<span class="sc">$</span>precision</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>all_pr_data<span class="sc">$</span>cc_precision_difference <span class="ot">&lt;-</span> gbm_pr_data_cc<span class="sc">$</span>precision <span class="sc">-</span> all_pr_data<span class="sc">$</span>precision</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a><span class="co"># PLOT 1: PRECISION-RECALL CURVES FOR ALL MODELS</span></span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a><span class="co">#pdf("undocumented_pr_curves.pdf", family="Times", width=9)</span></span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(<span class="st">"fffccc_pr_curves.png"</span>, <span class="at">width =</span> <span class="dv">22</span><span class="sc">*</span><span class="dv">100</span>, <span class="at">height =</span> <span class="dv">16</span><span class="sc">*</span><span class="dv">100</span>, <span class="at">res =</span> <span class="dv">300</span>, <span class="at">family =</span> <span class="st">"Times"</span>)</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">family =</span> <span class="st">"serif"</span>)</span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(all_pr_data<span class="sc">$</span>recall, all_pr_data<span class="sc">$</span>precision, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">pch =</span> <span class="dv">19</span>,</span>
+<span id="cb35-25"><a href="#cb35-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"yellow"</span>, <span class="at">xlab =</span> <span class="st">"Recall"</span>, <span class="at">ylab =</span> <span class="st">"Precision"</span>,</span>
+<span id="cb35-26"><a href="#cb35-26" aria-hidden="true" tabindex="-1"></a>     <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">lty =</span> <span class="dv">1</span>, <span class="at">cex.lab=</span><span class="fl">1.5</span>, <span class="at">cex.axis=</span><span class="dv">1</span>)</span>
+<span id="cb35-27"><a href="#cb35-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-28"><a href="#cb35-28" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(all_pr_data<span class="sc">$</span>recall, all_pr_data<span class="sc">$</span>gbm_precision_fc, <span class="at">type =</span> <span class="st">"l"</span>, </span>
+<span id="cb35-29"><a href="#cb35-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">col =</span> <span class="st">"purple"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb35-30"><a href="#cb35-30" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(all_pr_data<span class="sc">$</span>recall, all_pr_data<span class="sc">$</span>gbm_precision_cc, <span class="at">type =</span> <span class="st">"l"</span>, </span>
+<span id="cb35-31"><a href="#cb35-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">col =</span> <span class="st">"pink"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">lty =</span> <span class="dv">3</span>)</span>
+<span id="cb35-32"><a href="#cb35-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-33"><a href="#cb35-33" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="at">x =</span> <span class="fl">0.5</span>, <span class="at">y =</span> <span class="dv">1</span>, </span>
+<span id="cb35-34"><a href="#cb35-34" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"white"</span>, <span class="st">"yellow"</span>, <span class="st">"purple"</span>, <span class="st">"pink"</span>),</span>
+<span id="cb35-35"><a href="#cb35-35" aria-hidden="true" tabindex="-1"></a>       <span class="at">lwd =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>), </span>
+<span id="cb35-36"><a href="#cb35-36" aria-hidden="true" tabindex="-1"></a>       <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>),</span>
+<span id="cb35-37"><a href="#cb35-37" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Model:"</span>, <span class="st">"Full to Full"</span>, <span class="st">"Full to College"</span>, <span class="st">"College to College"</span>),</span>
+<span id="cb35-38"><a href="#cb35-38" aria-hidden="true" tabindex="-1"></a>       <span class="at">bty =</span> <span class="st">'n'</span>, <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">seg.len =</span> <span class="dv">6</span>)</span>
+<span id="cb35-39"><a href="#cb35-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-40"><a href="#cb35-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Add random baseline</span></span>
+<span id="cb35-41"><a href="#cb35-41" aria-hidden="true" tabindex="-1"></a>total_undocu <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb35-42"><a href="#cb35-42" aria-hidden="true" tabindex="-1"></a>random_baseline <span class="ot">&lt;-</span> total_undocu <span class="sc">/</span> <span class="fu">nrow</span>(test_gbm_num)</span>
+<span id="cb35-43"><a href="#cb35-43" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> random_baseline, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"gray"</span>)</span>
+<span id="cb35-44"><a href="#cb35-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Add text label for random baseline</span></span>
+<span id="cb35-45"><a href="#cb35-45" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="fl">0.5</span>, random_baseline <span class="sc">+</span> <span class="fl">0.05</span>, </span>
+<span id="cb35-46"><a href="#cb35-46" aria-hidden="true" tabindex="-1"></a>     <span class="fu">paste</span>(<span class="st">"Random baseline:"</span>, <span class="fu">round</span>(random_baseline, <span class="dv">3</span>)), </span>
+<span id="cb35-47"><a href="#cb35-47" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex =</span> <span class="fl">0.9</span>, <span class="at">col =</span> <span class="st">"gray30"</span>)</span>
+<span id="cb35-48"><a href="#cb35-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-49"><a href="#cb35-49" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Relative Pr-Re curves </span><span class="al">###</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(<span class="st">"undocumented_sample_differences.png"</span>, <span class="at">width =</span> <span class="dv">22</span><span class="sc">*</span><span class="dv">100</span>, <span class="at">height =</span> <span class="dv">16</span><span class="sc">*</span><span class="dv">100</span>, <span class="at">res =</span> <span class="dv">300</span>, <span class="at">family =</span> <span class="st">"Times"</span>)</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">family =</span> <span class="st">"serif"</span>)</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(all_pr_data<span class="sc">$</span>recall, all_pr_data<span class="sc">$</span>fc_precision_difference, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">pch =</span> <span class="dv">19</span>, </span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"purple"</span>, <span class="at">xlab =</span> <span class="st">"Recall Relative to Full-to-Full mapping"</span>, <span class="at">ylab =</span> <span class="st">"Precision"</span>, </span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.3</span>, <span class="fl">0.1</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">cex.lab=</span><span class="fl">1.5</span>, <span class="at">cex.axis=</span><span class="dv">1</span>)</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(all_pr_data<span class="sc">$</span>recall, all_pr_data<span class="sc">$</span>cc_precision_difference, <span class="at">type =</span> <span class="st">"l"</span>, </span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">col =</span> <span class="st">"pink"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">lty =</span> <span class="dv">3</span>)</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="at">x =</span> <span class="fl">0.5</span>, <span class="at">y =</span> <span class="sc">-</span><span class="fl">0.1</span>, </span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"white"</span>, <span class="st">"purple"</span>, <span class="st">"pink"</span>),</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">lwd =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>), </span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>),</span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Model:"</span>, <span class="st">"Full-to-College"</span>, <span class="st">"College-to-College"</span>),</span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">bty =</span> <span class="st">'n'</span>, <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">seg.len =</span> <span class="dv">5</span>)</span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"gray"</span>)</span>
+<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Add text label for random baseline</span></span>
+<span id="cb37-23"><a href="#cb37-23" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="fl">0.5</span>, <span class="fl">0.05</span>, </span>
+<span id="cb37-24"><a href="#cb37-24" aria-hidden="true" tabindex="-1"></a>     <span class="fu">paste</span>(<span class="st">"Full-to-Full baseline:"</span>, <span class="fu">round</span>(<span class="dv">0</span>, <span class="dv">3</span>)), </span>
+<span id="cb37-25"><a href="#cb37-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex =</span> <span class="fl">0.9</span>, <span class="at">col =</span> <span class="st">"gray30"</span>)</span>
+<span id="cb37-26"><a href="#cb37-26" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+</div>
+</section>
+<section id="demographic-precision-recall-curve-gbm-library-figure-3" class="level2">
+<h2 class="anchored" data-anchor-id="demographic-precision-recall-curve-gbm-library-figure-3">Demographic Precision-Recall Curve (GBM Library; Figure 3)</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Total undocumented cases in test set</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>total_undocu_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Group 1: Top 10 states</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>recall_top_ten_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>top_ten_states <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> total_undocu_gbm</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>precis_top_ten_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>top_ten_states <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> </span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>top_ten_states <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Group 2: Hispanic/Latino</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>recall_hispanic_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>spanish_hispanic_latino <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> total_undocu_gbm</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>precis_hispanic_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>spanish_hispanic_latino <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> </span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>spanish_hispanic_latino <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Group 3: Central American Latino</span></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>recall_central_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>                           test_gbm_num<span class="sc">$</span>central_latino <span class="sc">==</span>   <span class="dv">1</span>) <span class="sc">/</span> total_undocu_gbm</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>precis_central_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>                           test_gbm_num<span class="sc">$</span>central_latino <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> </span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>central_latino <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Group 4: Asian-born</span></span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>recall_asia_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>bpl_asia <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> total_undocu_gbm</span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>precis_asia_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>bpl_asia <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> </span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>               <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>bpl_asia <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Group 5: Non-fluent English speakers</span></span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>recall_nonfluent_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>nonfluent <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> total_undocu_gbm</span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>precis_nonfluent_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> test_gbm_num<span class="sc">$</span>nonfluent <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> </span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>nonfluent <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Set output file</span></span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(figures_path)</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(<span class="st">"undocumented_demographic__gbm_pr_curve.png"</span>, <span class="at">width =</span> <span class="dv">2700</span>, <span class="at">height =</span> <span class="dv">2100</span>, <span class="at">res =</span> <span class="dv">300</span>, <span class="at">family =</span> <span class="st">"Times"</span>)</span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Or use: pdf("undocumented_demographic_pr_curve.pdf", family="Times", width=9)</span></span>
+<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-37"><a href="#cb39-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up plot parameters</span></span>
+<span id="cb39-38"><a href="#cb39-38" aria-hidden="true" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">family =</span> <span class="st">"serif"</span>)</span>
+<span id="cb39-39"><a href="#cb39-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-40"><a href="#cb39-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Main precision-recall curve</span></span>
+<span id="cb39-41"><a href="#cb39-41" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gbm_pr_data_ff<span class="sc">$</span>recall, gbm_pr_data_ff<span class="sc">$</span>precision, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">pch =</span> <span class="dv">19</span>,</span>
+<span id="cb39-42"><a href="#cb39-42" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">xlab =</span> <span class="st">"Recall"</span>, <span class="at">ylab =</span> <span class="st">"Precision"</span>,</span>
+<span id="cb39-43"><a href="#cb39-43" aria-hidden="true" tabindex="-1"></a>     <span class="at">lwd =</span> <span class="dv">3</span>,</span>
+<span id="cb39-44"><a href="#cb39-44" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">lty =</span> <span class="dv">1</span>, </span>
+<span id="cb39-45"><a href="#cb39-45" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex.lab =</span> <span class="fl">1.5</span>, <span class="at">cex.axis =</span> <span class="dv">1</span>,</span>
+<span id="cb39-46"><a href="#cb39-46" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">""</span>)  <span class="co"># Add title if desired</span></span>
+<span id="cb39-47"><a href="#cb39-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-48"><a href="#cb39-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Add demographic group points</span></span>
+<span id="cb39-49"><a href="#cb39-49" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(recall_top_ten_gbm, precis_top_ten_gbm, <span class="at">pch =</span> <span class="dv">17</span>, <span class="at">col =</span> <span class="dv">1</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb39-50"><a href="#cb39-50" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(recall_hispanic_gbm, precis_hispanic_gbm, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">col =</span> <span class="dv">1</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb39-51"><a href="#cb39-51" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(recall_central_gbm, precis_central_gbm, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">col =</span> <span class="st">"gray"</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb39-52"><a href="#cb39-52" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(recall_asia_gbm, precis_asia_gbm, <span class="at">pch =</span> <span class="dv">17</span>, <span class="at">col =</span> <span class="st">"gray"</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb39-53"><a href="#cb39-53" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(recall_nonfluent_gbm, precis_nonfluent_gbm, <span class="at">pch =</span> <span class="dv">15</span>, <span class="at">col =</span> <span class="st">"darkgray"</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb39-54"><a href="#cb39-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-55"><a href="#cb39-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-56"><a href="#cb39-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Demographic groups legend</span></span>
+<span id="cb39-57"><a href="#cb39-57" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="fl">0.25</span>, <span class="dv">1</span>, </span>
+<span id="cb39-58"><a href="#cb39-58" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"white"</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="st">"gray"</span>, <span class="st">"gray"</span>, <span class="st">"darkgray"</span>), </span>
+<span id="cb39-59"><a href="#cb39-59" aria-hidden="true" tabindex="-1"></a>       <span class="at">pch =</span> <span class="fu">c</span>(<span class="dv">19</span>, <span class="dv">17</span>, <span class="dv">19</span>, <span class="dv">19</span>, <span class="dv">17</span>, <span class="dv">15</span>),</span>
+<span id="cb39-60"><a href="#cb39-60" aria-hidden="true" tabindex="-1"></a>       <span class="at">pt.cex =</span> <span class="fl">1.5</span>,</span>
+<span id="cb39-61"><a href="#cb39-61" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Demographic Groups:"</span>, </span>
+<span id="cb39-62"><a href="#cb39-62" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Top 10 states"</span>, </span>
+<span id="cb39-63"><a href="#cb39-63" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Hispanic/Latino"</span>,</span>
+<span id="cb39-64"><a href="#cb39-64" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Central Latino"</span>, </span>
+<span id="cb39-65"><a href="#cb39-65" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Asian Born"</span>,</span>
+<span id="cb39-66"><a href="#cb39-66" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Non-fluent English"</span>),</span>
+<span id="cb39-67"><a href="#cb39-67" aria-hidden="true" tabindex="-1"></a>       <span class="at">bty =</span> <span class="st">'n'</span>, </span>
+<span id="cb39-68"><a href="#cb39-68" aria-hidden="true" tabindex="-1"></a>       <span class="at">cex =</span> <span class="fl">1.25</span>, </span>
+<span id="cb39-69"><a href="#cb39-69" aria-hidden="true" tabindex="-1"></a>       <span class="at">ncol =</span> <span class="dv">1</span>, </span>
+<span id="cb39-70"><a href="#cb39-70" aria-hidden="true" tabindex="-1"></a>       <span class="at">bg =</span> <span class="st">"white"</span>)</span>
+<span id="cb39-71"><a href="#cb39-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-72"><a href="#cb39-72" aria-hidden="true" tabindex="-1"></a><span class="co"># Add random baseline</span></span>
+<span id="cb39-73"><a href="#cb39-73" aria-hidden="true" tabindex="-1"></a>random_baseline_gbm <span class="ot">&lt;-</span> <span class="fu">sum</span>(test_gbm_num<span class="sc">$</span>undocu_likely <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="fu">nrow</span>(test_gbm_num)</span>
+<span id="cb39-74"><a href="#cb39-74" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> random_baseline_gbm, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"gray50"</span>)</span>
+<span id="cb39-75"><a href="#cb39-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-76"><a href="#cb39-76" aria-hidden="true" tabindex="-1"></a><span class="co"># Add text label for random baseline</span></span>
+<span id="cb39-77"><a href="#cb39-77" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="fl">0.5</span>, random_baseline_gbm <span class="sc">+</span> <span class="fl">0.05</span>, </span>
+<span id="cb39-78"><a href="#cb39-78" aria-hidden="true" tabindex="-1"></a>     <span class="fu">paste</span>(<span class="st">"Random Baseline:"</span>, <span class="fu">round</span>(random_baseline_gbm, <span class="dv">3</span>)), </span>
+<span id="cb39-79"><a href="#cb39-79" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex =</span> <span class="fl">0.9</span>, <span class="at">col =</span> <span class="st">"gray30"</span>)</span>
+<span id="cb39-80"><a href="#cb39-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-81"><a href="#cb39-81" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== DEMOGRAPHIC GROUP PERFORMANCE ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== DEMOGRAPHIC GROUP PERFORMANCE ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Random Baseline Precision:"</span>, <span class="fu">round</span>(random_baseline_gbm, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Random Baseline Precision: 0.3037 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>summary_df_gbm <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Group =</span> <span class="fu">c</span>(<span class="st">"Top 10 states"</span>, <span class="st">"Hispanic/Latino"</span>, <span class="st">"Central Latino"</span>, </span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Asian Born"</span>, <span class="st">"Non-fluent English"</span>),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Recall =</span> <span class="fu">c</span>(recall_top_ten_gbm, recall_hispanic_gbm, recall_central_gbm, </span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>            recall_asia_gbm, recall_nonfluent_gbm),</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Precision =</span> <span class="fu">c</span>(precis_top_ten_gbm, precis_hispanic_gbm, precis_central_gbm, </span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>               precis_asia_gbm, precis_nonfluent_gbm)</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(summary_df_gbm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Group    Recall Precision
+1      Top 10 states 0.0000000       NaN
+2    Hispanic/Latino 0.6371882 0.3881215
+3     Central Latino 0.6167800 0.4047619
+4         Asian Born 0.1201814 0.1766667
+5 Non-fluent English 0.4693878 0.3670213</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save as both PDF and PNG</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>create_demographic_plot_gbm <span class="ot">&lt;-</span> <span class="cf">function</span>(filename_base) {</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Function to create the plot (reusable)</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  make_plot <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">par</span>(<span class="at">family =</span> <span class="st">"serif"</span>)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot</span>(gbm_pr_data_ff<span class="sc">$</span>recall, gbm_pr_data_ff<span class="sc">$</span>precision, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">pch =</span> <span class="dv">19</span>,</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">xlab =</span> <span class="st">"Recall"</span>, <span class="at">ylab =</span> <span class="st">"Precision"</span>,</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">lty =</span> <span class="dv">1</span>, </span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">cex.lab =</span> <span class="fl">1.5</span>, <span class="at">cex.axis =</span> <span class="dv">1</span>)</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">points</span>(recall_top_ten, precis_top_ten, <span class="at">pch =</span> <span class="dv">17</span>, <span class="at">col =</span> <span class="dv">1</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">points</span>(recall_hispanic, precis_hispanic, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">col =</span> <span class="dv">1</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">points</span>(recall_central, precis_central, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">col =</span> <span class="st">"gray"</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">points</span>(recall_asia, precis_asia, <span class="at">pch =</span> <span class="dv">17</span>, <span class="at">col =</span> <span class="st">"gray"</span>, <span class="at">cex =</span> <span class="fl">1.5</span>)</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">legend</span>(<span class="fl">0.63</span>, <span class="dv">1</span>, <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"white"</span>, <span class="dv">1</span>), <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>           <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Learning Method:"</span>, <span class="st">"Boosted Trees"</span>),</span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>           <span class="at">bty =</span> <span class="st">'n'</span>, <span class="at">cex =</span> <span class="fl">1.25</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">legend</span>(<span class="fl">0.30</span>, <span class="dv">1</span>, <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"white"</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="st">"gray"</span>, <span class="st">"gray"</span>), </span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>           <span class="at">pch =</span> <span class="fu">c</span>(<span class="dv">19</span>, <span class="dv">17</span>, <span class="dv">19</span>, <span class="dv">19</span>, <span class="dv">17</span>), <span class="at">pt.cex =</span> <span class="fl">1.5</span>,</span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>           <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Groups:"</span>, <span class="st">"Top 10 states"</span>, <span class="st">"Hispanic/Latino"</span>,</span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Central Latino"</span>, <span class="st">"Asian Born"</span>),</span>
+<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>           <span class="at">bty =</span> <span class="st">'n'</span>, <span class="at">cex =</span> <span class="fl">1.25</span>, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">bg =</span> <span class="st">"white"</span>)</span>
+<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb47-26"><a href="#cb47-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">abline</span>(<span class="at">h =</span> random_baseline_gbm, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"gray50"</span>)</span>
+<span id="cb47-27"><a href="#cb47-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-29"><a href="#cb47-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Save as PDF</span></span>
+<span id="cb47-30"><a href="#cb47-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pdf</span>(<span class="fu">paste0</span>(filename_base, <span class="st">".pdf"</span>), <span class="at">family =</span> <span class="st">"Times"</span>, <span class="at">width =</span> <span class="dv">9</span>)</span>
+<span id="cb47-31"><a href="#cb47-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_plot</span>()</span>
+<span id="cb47-32"><a href="#cb47-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
+<span id="cb47-33"><a href="#cb47-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-34"><a href="#cb47-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Save as PNG</span></span>
+<span id="cb47-35"><a href="#cb47-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">png</span>(<span class="fu">paste0</span>(filename_base, <span class="st">".png"</span>), <span class="at">width =</span> <span class="dv">2700</span>, <span class="at">height =</span> <span class="dv">2100</span>, <span class="at">res =</span> <span class="dv">300</span>, <span class="at">family =</span> <span class="st">"Times"</span>)</span>
+<span id="cb47-36"><a href="#cb47-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_plot</span>()</span>
+<span id="cb47-37"><a href="#cb47-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
+<span id="cb47-38"><a href="#cb47-38" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

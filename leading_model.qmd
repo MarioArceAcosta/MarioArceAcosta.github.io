@@ -1,6 +1,15 @@
 ---
 title: "Leading ML Model"
-format: html
+format:
+  html:
+    toc: true                # Floating Table of Contents
+    toc-location: left       # Puts navigation on the left (like a documentation site)
+    toc-depth: 3             # Allows jumping to sub-sections
+    code-fold: show          # Default to 'show' if you want to emphasize the code, or 'true' to hide it
+    code-tools: true         # Adds a "Source Code" button at top right
+    code-link: true          # Hyperlinks functions to their R documentation
+    df-print: paged          # Makes large tables scrollable/searchable
+    number-sections: true    # Adds "1.1, 1.2" structure for rigor
 ---
 
 # Libraries
@@ -10,6 +19,7 @@ format: html
 #| message: false
 #| warning: false 
 
+library(dplyr)
 library(gbm)      # For Gradient Boosting
 library(class)
 library(caTools)
@@ -18,6 +28,7 @@ library(ROCR)
 library(vip)  # For feature importance
 library(gridExtra)
 library(doParallel)
+library(xtable)
 ```
 
 # Loading Data
@@ -52,32 +63,46 @@ registerDoParallel(cl)
 
 set.seed(1)
 ## Data partitioning for gbm library
-all_data_college$sample$undocu_likely <- as.numeric(all_data_college$sample$undocu_likely) - 1
+control_up <- trainControl(
+    method = "cv",
+    number = 10,  
+    summaryFunction = twoClassSummary,
+    classProbs = TRUE,
+    sampling = "up",
+)
 
-train_index_college <- createDataPartition(all_data_college$sample$undocu_likely, p = 0.7, list = FALSE)
-train_college <- all_data_college$sample[train_index_college, ]
-test_college <- all_data_college$sample[-train_index_college, ]
+## Data partitioning for caret library
+levels(all_data$sample$undocu_likely) <- make.names(levels(all_data$sample$undocu_likely))
+train_index_gbm <- createDataPartition(all_data$sample$undocu_likely, p = 0.7, list = FALSE)
+train_gbm <- all_data$sample[train_index_gbm, ]
+test_gbm <- all_data$sample[-train_index_gbm, ]
 
-college_gbm_model <- gbm(undocu_likely ~ age + fem + married + cit_spouse + medicaid + nonfluent + spanish_hispanic_latino + central_latino + bpl_asia + household_size + poverty + asian + black + white + other_race + employed + years_us + yrsed, data = train_college, 
+
+train_gbm_num <-  train_gbm
+train_gbm_num$undocu_likely <- as.numeric(train_gbm$undocu_likely) - 1      
+test_gbm_num <-  test_gbm
+test_gbm_num$undocu_likely <- as.numeric(test_gbm$undocu_likely) - 1 
+
+gbm_model <- gbm(undocu_likely ~ age + fem + married + cit_spouse + medicaid + nonfluent + spanish_hispanic_latino + central_latino + bpl_asia + household_size + poverty + asian + black + white + other_race + employed + years_us + yrsed, data = train_gbm_num, 
                  verbose = FALSE,
                  cv.folds = 10,
                  n.trees = 1766,
-                 shrinkage = 0.005, 
+                 shrinkage = 0.005,
                  interaction.depth = 6)
 
 
 ## Model summary and optimal number of trees
-college_gbm_model
+gbm_model
 
-optimal_trees_college <- gbm.perf(college_gbm_model, method = "cv", plot.it = FALSE)
-cat("Optimal number of trees:", optimal_trees_college, "\n")
+optimal_trees_gbm_two <- gbm.perf(gbm_model, method = "cv", plot.it = FALSE)
+cat("Optimal number of trees:", optimal_trees_gbm_two, "\n")
 
 
 setwd(figures_path)
 ## Feature importance
-college_gbm_feature_importance <- vip(college_gbm_model, num_features = 19, bar = FALSE)
-ggsave("college_gbm_feature_importance.png", college_gbm_feature_importance, width = 22, height = 16, units = "cm", dpi = 300)
-grid.arrange(college_gbm_feature_importance, nrow = 1)
+feature_importance_gbm <- vip(gbm_model, num_features = 19, bar = FALSE)
+ggsave("gbm_feature_importance.png", feature_importance_gbm, width = 22, height = 16, units = "cm", dpi = 300)
+grid.arrange(feature_importance_gbm, nrow = 1)
 
 stopCluster(cl) # Optional code part of parallel processing
 ```
@@ -127,3 +152,429 @@ grid.arrange(college_gbm_feature_importance, nrow = 1)
 stopCluster(cl) # Optional code part of parallel processing
 on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
 ```
+
+# GBM Performance
+
+```{r}
+#| results: hold
+#| message: false
+#| warning: false 
+
+# ==============================================================================
+# GBM (FUll to Full) Library Performance
+# ==============================================================================
+
+## Metrics for Figure 2 comparison (gbm library model)
+# Make predictions on test set
+gbm.pred = predict(gbm_model, newdata = test_gbm_num, type = "response", n.trees = optimal_trees_gbm_two)
+# Create prediction object for ROCR
+gbm.prediction = prediction(gbm.pred, test_gbm_num$undocu_likely)
+# Get raw predictions (class labels)
+gbm.predict = predict(gbm_model, newdata = test_gbm_num, n.trees=optimal_trees_gbm_two)  # Class predictions
+
+gbm.roc = performance(gbm.prediction,"tpr","fpr")   # ROC curve 
+gbm.pr = performance(gbm.prediction,"prec","rec") # Precision-Recall curve
+gbm.auc <- performance(gbm.prediction,"auc")@y.values[[1]] # AUC value
+
+gbm_auc_pr <- trapz(
+  as.vector(gbm.pr@x.values)[[1]][-1], 
+  as.vector(gbm.pr@y.values)[[1]][-1]
+)
+
+gbm_performance <- gbm.pr
+plot(gbm.roc, main = "ROC Curve", col = "blue", lwd = 2) #PLOT EACH ON A SINGLE GRAPH FOR ROC
+abline(a = 0, b = 1, lty = 2, col = "red")
+plot(gbm.pr) # plot Precision-Recall curve
+
+
+cat("Optimal number of trees:", optimal_trees_gbm_two, "\n")
+cat("AUC-ROC:", round(gbm.auc, 4), "\n")
+cat("AUC-PR:", round(gbm_auc_pr, 4), "\n")
+
+gbm_predicted_class <- ifelse(gbm.pred > 0.5, 1, 0)
+table(Predicted = gbm_predicted_class, Actual = test_gbm_num$undocu_likely)
+
+# ==============================================================================
+# GBM (FUll to College) Library Performance
+# ==============================================================================
+
+## Metrics for Figure 2 comparison (gbm library model)
+# Make predictions on test set
+gbm.pred_fc = predict(gbm_model, newdata = test_college, type = "response", n.trees = optimal_trees_gbm_two)
+# Create prediction object for ROCR
+gbm.prediction_fc = prediction(gbm.pred_fc, test_college$undocu_likely)
+# Get raw predictions (class labels)
+gbm.predict_fc = predict(gbm_model, newdata = test_college, n.trees=optimal_trees_gbm_two)  # Class predictions
+
+gbm.roc_fc = performance(gbm.prediction_fc,"tpr","fpr")   # ROC curve 
+gbm.pr_fc = performance(gbm.prediction_fc,"prec","rec") # Precision-Recall curve
+gbm.auc_fc <- performance(gbm.prediction_fc,"auc")@y.values[[1]] # AUC value
+
+gbm_auc_pr_fc <- trapz(
+  as.vector(gbm.pr_fc@x.values)[[1]][-1], 
+  as.vector(gbm.pr_fc@y.values)[[1]][-1]
+)
+
+gbm_performance_fc <- gbm.pr_fc
+plot(gbm.roc_fc, main = "ROC Curve", col = "blue", lwd = 2) #PLOT EACH ON A SINGLE GRAPH FOR ROC
+abline(a = 0, b = 1, lty = 2, col = "red")
+plot(gbm.pr_fc) # plot Precision-Recall curve
+
+
+cat("Optimal number of trees:", optimal_trees_gbm_two, "\n")
+cat("AUC-ROC:", round(gbm.auc_fc, 4), "\n")
+cat("AUC-PR:", round(gbm_auc_pr_fc, 4), "\n")
+
+gbm_predicted_class_fc <- ifelse(gbm.pred_fc > 0.5, 1, 0)
+table(Predicted = gbm_predicted_class_fc, Actual = test_college$undocu_likely)
+
+# ==============================================================================
+# GBM (College to College) Library Performance
+# ==============================================================================
+
+## Metrics for Figure 2 comparison (gbm library model)
+# Make predictions on test set
+gbm.pred_cc = predict(college_gbm_model, newdata = test_college, type = "response", n.trees = optimal_trees_college)
+# Create prediction object for ROCR
+gbm.prediction_cc = prediction(gbm.pred_cc, test_college$undocu_likely)
+# Get raw predictions (class labels)
+gbm.predict_cc = predict(college_gbm_model, newdata = test_college, n.trees=optimal_trees_college)  # Class predictions
+
+gbm.roc_cc = performance(gbm.prediction_cc,"tpr","fpr")   # ROC curve 
+gbm.pr_cc = performance(gbm.prediction_cc,"prec","rec") # Precision-Recall curve
+gbm.auc_cc <- performance(gbm.prediction_cc,"auc")@y.values[[1]] # AUC value
+
+gbm_auc_pr_cc <- trapz(
+  as.vector(gbm.pr_cc@x.values)[[1]][-1], 
+  as.vector(gbm.pr_cc@y.values)[[1]][-1]
+)
+
+gbm_performance_cc <- gbm.pr_cc
+plot(gbm.roc_cc, main = "ROC Curve", col = "blue", lwd = 2) #PLOT EACH ON A SINGLE GRAPH FOR ROC
+abline(a = 0, b = 1, lty = 2, col = "red")
+plot(gbm.pr_cc) # plot Precision-Recall curve
+
+
+cat("Optimal number of trees:", optimal_trees_college, "\n")
+cat("AUC-ROC:", round(gbm.auc_cc, 4), "\n")
+cat("AUC-PR:", round(gbm_auc_pr_cc, 4), "\n")
+
+gbm_predicted_class_cc <- ifelse(gbm.pred_cc > 0.5, 1, 0)
+table(Predicted = gbm_predicted_class_cc, Actual = test_college$undocu_likely)
+```
+
+## P Quartiles and Thresholds
+
+```{r}
+test_gbm_num$p = predict(gbm_model, newdata = test_gbm_num, type = "response", n.trees = optimal_trees_gbm_two)
+test_college$p = predict(gbm_model, newdata = test_college, type = "response", n.trees = optimal_trees_gbm_two)
+
+
+# Create quartiles based on probability magnitude
+
+test_gbm_num$p_quartiles <- cut(test_gbm_num$p, 
+                                   breaks = quantile(test_gbm_num$p, probs = c(0, 0.25, 0.5, 0.75, 1)), 
+                                   labels = c("Q1", "Q2", "Q3", "Q4"), 
+                                   include.lowest = TRUE)
+test_college$p_quartiles <- cut(test_college$p, 
+                                   breaks = quantile(test_college$p, probs = c(0, 0.25, 0.5, 0.75, 1)), 
+                                   labels = c("Q1", "Q2", "Q3", "Q4"), 
+                                   include.lowest = TRUE)
+# Check the distributions
+table(test_gbm_num$p_quartiles)
+table(test_college$p_quartiles)
+
+# Proportion of undocu_likely in each quartiles
+quartiles_table_gbm <- test_gbm_num %>%
+  group_by(p_quartiles) %>%
+  summarise(
+    count = sum(undocu_likely == 1),
+    n = n(),
+    actual_proportion = (count / n)
+    )
+quartiles_table_college <- test_college %>%
+  group_by(p_quartiles) %>%
+  summarise(
+    count = sum(undocu_likely == 1),
+    n = n(),
+    actual_proportion = (count / n)
+    )
+
+xtable(quartiles_table_gbm, digits=4)
+print(quartiles_table_gbm)
+xtable(quartiles_table_college, digits=4)
+print(quartiles_table_college)
+
+
+top_75_sample_num <- test_gbm_num %>%
+  filter(undocu_likely == 1) %>%
+  arrange(desc(p)) %>%
+  mutate(
+    rank = row_number(),
+    cumulative_p = rank / n(),
+    top_75 = cumulative_p <= 0.75
+  ) %>%
+  filter(top_75==TRUE)
+threshold_75_num <- min(top_75_sample_num$p)
+
+undocu_test_num <- test_gbm_num %>%
+  filter(undocu_likely == 1) %>%
+  arrange(desc(p))
+
+# Create GBM high recall (p>threshold), high probability (75% of actual), low probability (Q1)
+test_gbm_num$predicted_class <- ifelse(test_gbm_num$p >= threshold_75_num, 1, 0)
+
+quartile_thresholds_gbm <- quantile(undocu_test_num$p, probs = c(0, 0.25, 0.5, 0.75, 1))
+print(quartile_thresholds_gbm)
+```
+
+## Precision-Recall Curves (Full to Full, Full to College, College to College)
+
+```{r}
+setwd(figures_path)
+# ==============================================================================
+# PREPARE PRECISION-RECALL DATA FOR ALL MODELS
+# ==============================================================================
+
+# Start with Full to Full predictions as baseline
+gbm_pr_data_ff <- data.frame(
+  recall = unlist(gbm.pr@x.values), 
+  precision = unlist(gbm.pr@y.values)
+)
+
+# Interpolate other models to match boosted trees recall values
+gbm_pr_data_fc <- data.frame(
+  recall = approx(unlist(gbm.pr_fc@x.values), unlist(gbm.pr_fc@y.values), 
+                 xout = gbm_pr_data_ff$recall)$x,
+  precision = approx(unlist(gbm.pr_fc@x.values), unlist(gbm.pr_fc@y.values), 
+                    xout = gbm_pr_data_ff$recall)$y
+)
+
+# Interpolate other models to match boosted trees recall values
+gbm_pr_data_cc <- data.frame(
+  recall = approx(unlist(gbm.pr_cc@x.values), unlist(gbm.pr_cc@y.values), 
+                 xout = gbm_pr_data_ff$recall)$x,
+  precision = approx(unlist(gbm.pr_cc@x.values), unlist(gbm.pr_cc@y.values), 
+                    xout = gbm_pr_data_ff$recall)$y
+)
+
+# ==============================================================================
+# COMBINE ALL DATA
+# ==============================================================================
+
+all_pr_data <- gbm_pr_data_ff
+
+# Add precision values for other models
+all_pr_data$gbm_precision_fc <- gbm_pr_data_fc$precision
+all_pr_data$gbm_precision_cc <- gbm_pr_data_cc$precision
+
+# Calculate precision differences relative to boosted trees
+all_pr_data$fc_precision_difference <- gbm_pr_data_fc$precision - all_pr_data$precision
+all_pr_data$cc_precision_difference <- gbm_pr_data_cc$precision - all_pr_data$precision
+
+# ==============================================================================
+# PLOT 1: PRECISION-RECALL CURVES FOR ALL MODELS
+# ==============================================================================
+
+#pdf("undocumented_pr_curves.pdf", family="Times", width=9)
+png("fffccc_pr_curves.png", width = 22*100, height = 16*100, res = 300, family = "Times")
+
+op <- par(family = "serif")
+
+plot(all_pr_data$recall, all_pr_data$precision, type = "l", pch = 19,
+     col = "yellow", xlab = "Recall", ylab = "Precision",
+     lwd = 3, ylim=c(0, 1), xlim = c(0,1), lty = 1, cex.lab=1.5, cex.axis=1)
+
+lines(all_pr_data$recall, all_pr_data$gbm_precision_fc, type = "l", 
+      col = "purple", lwd = 3, lty = 2)
+lines(all_pr_data$recall, all_pr_data$gbm_precision_cc, type = "l", 
+      col = "pink", lwd = 3, lty = 3)
+
+legend(x = 0.5, y = 1, 
+       col = c("white", "yellow", "purple", "pink"),
+       lwd = c(3, 3, 3, 3, 3, 3), 
+       lty = c(0, 1, 2, 3, 4, 5),
+       legend = c("Model:", "Full to Full", "Full to College", "College to College"),
+       bty = 'n', cex = 1, ncol = 1, seg.len = 6)
+
+# Add random baseline
+total_undocu <- sum(test_gbm_num$undocu_likely == 1)
+random_baseline <- total_undocu / nrow(test_gbm_num)
+abline(h = random_baseline, lty = 2, col = "gray")
+# Add text label for random baseline
+text(0.5, random_baseline + 0.05, 
+     paste("Random baseline:", round(random_baseline, 3)), 
+     cex = 0.9, col = "gray30")
+
+dev.off()
+
+
+### Relative Pr-Re curves ###
+
+png("undocumented_sample_differences.png", width = 22*100, height = 16*100, res = 300, family = "Times")
+
+op <- par(family = "serif")
+
+plot(all_pr_data$recall, all_pr_data$fc_precision_difference, type = "l", pch = 19, 
+     col = "purple", xlab = "Recall Relative to Full-to-Full mapping", ylab = "Precision", 
+     lwd = 3, ylim = c(-0.3, 0.1), xlim = c(0,1), lty = 2, cex.lab=1.5, cex.axis=1)
+
+lines(all_pr_data$recall, all_pr_data$cc_precision_difference, type = "l", 
+      col = "pink", lwd = 3, lty = 3)
+
+legend(x = 0.5, y = -0.1, 
+       col = c("white", "purple", "pink"),
+       lwd = c(3, 3, 3), 
+       lty = c(0, 2, 3),
+       legend = c("Model:", "Full-to-College", "College-to-College"),
+       bty = 'n', cex = 1, ncol = 1, seg.len = 5)
+
+abline(h = 0, lty = 2, col = "gray")
+# Add text label for random baseline
+text(0.5, 0.05, 
+     paste("Full-to-Full baseline:", round(0, 3)), 
+     cex = 0.9, col = "gray30")
+dev.off()
+```
+
+## Demographic Precision-Recall Curve (GBM Library; Figure 3)
+
+```{r}
+# Total undocumented cases in test set
+total_undocu_gbm <- sum(test_gbm_num$undocu_likely == 1)
+
+# Group 1: Top 10 states
+recall_top_ten_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$top_ten_states == 1) / total_undocu_gbm
+precis_top_ten_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$top_ten_states == 1) / 
+                sum(test_gbm_num$top_ten_states == 1)
+
+# Group 2: Hispanic/Latino
+recall_hispanic_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$spanish_hispanic_latino == 1) / total_undocu_gbm
+precis_hispanic_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$spanish_hispanic_latino == 1) / 
+                   sum(test_gbm_num$spanish_hispanic_latino == 1)
+
+# Group 3: Central American Latino
+recall_central_gbm <- sum(test_gbm_num$undocu_likely == 1 & 
+                           test_gbm_num$central_latino ==   1) / total_undocu_gbm
+precis_central_gbm <- sum(test_gbm_num$undocu_likely == 1 & 
+                           test_gbm_num$central_latino == 1) / 
+                        sum(test_gbm_num$central_latino == 1)
+
+# Group 4: Asian-born
+recall_asia_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$bpl_asia == 1) / total_undocu_gbm
+precis_asia_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$bpl_asia == 1) / 
+               sum(test_gbm_num$bpl_asia == 1)
+
+# Group 5: Non-fluent English speakers
+recall_nonfluent_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$nonfluent == 1) / total_undocu_gbm
+precis_nonfluent_gbm <- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$nonfluent == 1) / 
+                    sum(test_gbm_num$nonfluent == 1)
+
+
+# Set output file
+setwd(figures_path)
+png("undocumented_demographic__gbm_pr_curve.png", width = 2700, height = 2100, res = 300, family = "Times")
+# Or use: pdf("undocumented_demographic_pr_curve.pdf", family="Times", width=9)
+
+# Set up plot parameters
+op <- par(family = "serif")
+
+# Main precision-recall curve
+plot(gbm_pr_data_ff$recall, gbm_pr_data_ff$precision, type = "l", pch = 19,
+     col = "black", xlab = "Recall", ylab = "Precision",
+     lwd = 3,
+     ylim = c(0, 1), xlim = c(0, 1), lty = 1, 
+     cex.lab = 1.5, cex.axis = 1,
+     main = "")  # Add title if desired
+
+# Add demographic group points
+points(recall_top_ten_gbm, precis_top_ten_gbm, pch = 17, col = 1, cex = 1.5)
+points(recall_hispanic_gbm, precis_hispanic_gbm, pch = 19, col = 1, cex = 1.5)
+points(recall_central_gbm, precis_central_gbm, pch = 19, col = "gray", cex = 1.5)
+points(recall_asia_gbm, precis_asia_gbm, pch = 17, col = "gray", cex = 1.5)
+points(recall_nonfluent_gbm, precis_nonfluent_gbm, pch = 15, col = "darkgray", cex = 1.5)
+
+
+# Demographic groups legend
+legend(0.25, 1, 
+       col = c("white", 1, 1, "gray", "gray", "darkgray"), 
+       pch = c(19, 17, 19, 19, 17, 15),
+       pt.cex = 1.5,
+       legend = c("Demographic Groups:", 
+                 "Top 10 states", 
+                 "Hispanic/Latino",
+                 "Central Latino", 
+                 "Asian Born",
+                 "Non-fluent English"),
+       bty = 'n', 
+       cex = 1.25, 
+       ncol = 1, 
+       bg = "white")
+
+# Add random baseline
+random_baseline_gbm <- sum(test_gbm_num$undocu_likely == 1) / nrow(test_gbm_num)
+abline(h = random_baseline_gbm, lty = 2, col = "gray50")
+
+# Add text label for random baseline
+text(0.5, random_baseline_gbm + 0.05, 
+     paste("Random Baseline:", round(random_baseline_gbm, 3)), 
+     cex = 0.9, col = "gray30")
+
+dev.off()
+
+
+
+cat("\n=== DEMOGRAPHIC GROUP PERFORMANCE ===\n")
+cat("Random Baseline Precision:", round(random_baseline_gbm, 4), "\n\n")
+
+summary_df_gbm <- data.frame(
+  Group = c("Top 10 states", "Hispanic/Latino", "Central Latino", 
+            "Asian Born", "Non-fluent English"),
+  Recall = c(recall_top_ten_gbm, recall_hispanic_gbm, recall_central_gbm, 
+            recall_asia_gbm, recall_nonfluent_gbm),
+  Precision = c(precis_top_ten_gbm, precis_hispanic_gbm, precis_central_gbm, 
+               precis_asia_gbm, precis_nonfluent_gbm)
+)
+
+print(summary_df_gbm)
+
+# Save as both PDF and PNG
+create_demographic_plot_gbm <- function(filename_base) {
+  # Function to create the plot (reusable)
+  make_plot <- function() {
+    par(family = "serif")
+    plot(gbm_pr_data_ff$recall, gbm_pr_data_ff$precision, type = "l", pch = 19,
+         col = "black", xlab = "Recall", ylab = "Precision",
+         lwd = 3, ylim = c(0, 1), xlim = c(0, 1), lty = 1, 
+         cex.lab = 1.5, cex.axis = 1)
+    
+    points(recall_top_ten, precis_top_ten, pch = 17, col = 1, cex = 1.5)
+    points(recall_hispanic, precis_hispanic, pch = 19, col = 1, cex = 1.5)
+    points(recall_central, precis_central, pch = 19, col = "gray", cex = 1.5)
+    points(recall_asia, precis_asia, pch = 17, col = "gray", cex = 1.5)
+    
+    legend(0.63, 1, col = c("white", 1), lwd = 2, lty = c(0, 1),
+           legend = c("Learning Method:", "Boosted Trees"),
+           bty = 'n', cex = 1.25, ncol = 1)
+    
+    legend(0.30, 1, col = c("white", 1, 1, "gray", "gray"), 
+           pch = c(19, 17, 19, 19, 17), pt.cex = 1.5,
+           legend = c("Groups:", "Top 10 states", "Hispanic/Latino",
+                     "Central Latino", "Asian Born"),
+           bty = 'n', cex = 1.25, ncol = 1, bg = "white")
+    
+    abline(h = random_baseline_gbm, lty = 2, col = "gray50")
+  }
+  
+  # Save as PDF
+  pdf(paste0(filename_base, ".pdf"), family = "Times", width = 9)
+  make_plot()
+  dev.off()
+  
+  # Save as PNG
+  png(paste0(filename_base, ".png"), width = 2700, height = 2100, res = 300, family = "Times")
+  make_plot()
+  dev.off()
+}
+```
+

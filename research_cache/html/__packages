@@ -15,3 +15,5 @@ foreach
 iterators
 doParallel
 readr
+gbm
+pROC

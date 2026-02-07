@@ -35,9 +35,14 @@ library(gridExtra)
 library(ranger)
 #library(doParallel)    ## Optional: for faster RF model training
 
+library(gbm)      # For Gradient Boosting
+library(pROC)
+library(xtable)
 ```
 
-# Loading Data
+# Survey of Income and Program Participation (SIPP)
+
+## Loading Data
 
 ```{r Load raw data}
 #| message: false
@@ -50,7 +55,7 @@ setwd(data_path)
 sipp08_2 <- read_csv("(Step 1 output) Core_TM SIPP 2008 Wave 2.csv")
 ```
 
-# SIPP Data Cleaning and Recoding
+## SIPP Data Cleaning and Recoding
 
 ```{r Data preparation}
 #| message: false
@@ -172,7 +177,7 @@ variable_lists <- list(
 )
 ```
 
-# Subsamples
+## Subsamples
 
 ```{r Dataset creation}
 #| message: false
@@ -226,12 +231,13 @@ saveRDS(all_data_college, "data/all_data_college.rds")
 saveRDS(variable_lists, "data/variable_lists.rds")
 ```
 
-# Logistic
+## Logistic
 
 ```{r Logistic Regression}
 #| results: hold
 #| message: false
 #| warning: false 
+
 
 levels(all_data$sample$undocu_likely) <- make.names(levels(all_data$sample$undocu_likely))
 
@@ -246,7 +252,8 @@ control <- trainControl(
     number = 10,  
     summaryFunction = twoClassSummary,
     classProbs = TRUE,
-    sampling = "up"
+    sampling = "up",
+    allowParallel = FALSE
 )
 
 ## Train glm with custom trainControl
@@ -274,7 +281,7 @@ logistic.prediction = prediction(logistic.preds, test_logistic$undocu_likely)
 logistic.pr = performance(logistic.prediction,"prec","rec") # Precision-Recall curve
 ```
 
-# KNN
+## K-Nearest Neighbors
 
 ```{r KNN}
 #| results: hold
@@ -324,7 +331,7 @@ knn.pr = performance(knn.prediction,"prec","rec") # Precision-Recall curve
 
 -   and (2) typically have the largest impact on predictive accuracy and should always be tuned. (3) and (4) tend to have marginal impact on predictive accuracy but are still worth exploring. They also have the ability to influence computational efficiency. (5) tends to have the smallest impact on predictive accuracy and is used primarily to increase computational efficiency.
 
-# RF
+## Random Forest
 
 ```{r Random Forest}
 #| label: train-random-forest
@@ -364,6 +371,7 @@ control_up <- trainControl(
     summaryFunction = twoClassSummary,
     classProbs = TRUE,
     sampling = "up",
+    allowParallel = FALSE
 )
 
 
@@ -408,4 +416,289 @@ rf.prediction = prediction(rf.preds, test_rf$undocu_likely)
 rf.pr = performance(rf.prediction,"prec","rec") # Precision-Recall curve
 
 # stopCluster(cl) # Optional code part of parallel processing
+```
+
+## Gradient-Boosted Trees
+
+```{r Gradient-Boosting}
+#| cache: true
+#| results: hold
+#| message: false
+#| warning: false
+
+set.seed(1)
+## Data partitioning for caret library
+levels(all_data$sample$undocu_likely) <- make.names(levels(all_data$sample$undocu_likely))
+train_index_gbm <- createDataPartition(all_data$sample$undocu_likely, p = 0.7, list = FALSE)
+train_gbm <- all_data$sample[train_index_gbm, ]
+test_gbm <- all_data$sample[-train_index_gbm, ]
+
+## Data partitioning for gbm library
+train_gbm_num <-  train_gbm
+train_gbm_num$undocu_likely <- as.numeric(train_gbm$undocu_likely) - 1      
+test_gbm_num <-  test_gbm
+test_gbm_num$undocu_likely <- as.numeric(test_gbm$undocu_likely) - 1 
+
+gbm_model <- gbm(undocu_likely ~ age + fem + married + cit_spouse + medicaid + nonfluent + spanish_hispanic_latino + central_latino + bpl_asia + household_size + poverty + asian + black + white + other_race + employed + years_us + yrsed, data = train_gbm_num, 
+                 verbose = FALSE,
+                 cv.folds = 10,
+                 n.trees = 1766,
+                 shrinkage = 0.005,
+                 interaction.depth = 6)
+
+
+## Model summary and optimal number of trees
+gbm_model
+optimal_trees_gbm_two <- gbm.perf(gbm_model, method = "cv", plot.it = FALSE)
+cat("Optimal number of trees:", optimal_trees_gbm_two, "\n")
+
+
+setwd(figures_path)
+## Feature importance
+feature_importance_gbm <- vip(gbm_model, num_features = 19, bar = FALSE)
+ggsave("gbm_feature_importance.png", feature_importance_gbm, width = 22, height = 16, units = "cm", dpi = 300)
+grid.arrange(feature_importance_gbm, nrow = 1)
+```
+
+```{r GBM Performance}
+#| cache: true
+#| results: hold
+#| message: false
+#| warning: false
+
+## Metrics for Figure 2 comparison (gbm library model)
+# Make predictions on test set
+gbm.preds = predict(gbm_model, newdata = test_gbm_num, type = "response", n.trees = optimal_trees_gbm_two)
+# Create prediction object for ROCR
+gbm.prediction = prediction(gbm.preds, test_gbm_num$undocu_likely)
+
+gbm.pr = performance(gbm.prediction,"prec","rec") # Precision-Recall curve
+gbm.roc = performance(gbm.prediction,"tpr","fpr")   # ROC curve 
+gbm.auc <- performance(gbm.prediction,"auc")@y.values[[1]] # AUC value
+
+gbm_auc_pr <- trapz(
+  as.vector(gbm.pr@x.values)[[1]][-1], 
+  as.vector(gbm.pr@y.values)[[1]][-1]
+)
+
+
+rf.pr = performance(rf.prediction,"prec","rec") # Precision-Recall curve
+rf.roc = performance(rf.prediction,"tpr","fpr") 
+
+
+setwd("G:/Shared drives/Undocu Research/Output/Figures")
+png("roc_curves.png", width = 22*100, height = 16*100, res = 300)
+
+plot(gbm.roc, main = "ROC Curves for contending models", col = "blue", lwd = 2) 
+lines(rf.roc@x.values[[1]], rf.roc@y.values[[1]], col = "red", lwd = 2)
+
+legend(x = 0.6, y = 1, 
+       col = c("white", "blue", "red"),
+       lwd = c(3, 3, 3), 
+       lty = c(0, 1, 2),
+       legend = c("Model:", "Gradient boosting", "Random Forest"),
+       bty = 'n', cex = 0.95, ncol = 1, seg.len = 6)
+
+abline(a = 0, b = 1, lty = 2, col = "gray")
+
+dev.off()
+
+# Plot the first curve
+plot(rf.pr, col = "blue", lwd = 2, main = "Precision-Recall Curve")
+# Add the second curve
+lines(gbm.pr@x.values[[1]], gbm.pr@y.values[[1]], col = "red", lwd = 2)
+```
+
+## ML Performance Evaluation
+
+```{r Figure 2}
+#| cache: true
+#| results: hold
+#| message: false
+#| warning: false
+
+setwd("G:/Shared drives/Undocu Research/Output/Figures")
+# ==============================================================================
+# PREPARE PRECISION-RECALL DATA FOR ALL MODELS
+# ==============================================================================
+
+# Start with boosted trees as baseline
+gbm_pr_data <- data.frame(
+  recall = unlist(gbm.pr@x.values), 
+  precision = unlist(gbm.pr@y.values)
+)
+
+# Interpolate other models to match boosted trees recall values
+rf_pr_data <- data.frame(
+  recall = approx(unlist(rf.pr@x.values), unlist(rf.pr@y.values), 
+                 xout = gbm_pr_data$recall)$x,
+  precision = approx(unlist(rf.pr@x.values), unlist(rf.pr@y.values), 
+                    xout = gbm_pr_data$recall)$y
+)
+
+logistic_pr_data <- data.frame(
+  recall = approx(unlist(logistic.pr@x.values), unlist(logistic.pr@y.values), 
+                 xout = gbm_pr_data$recall)$x,
+  precision = approx(unlist(logistic.pr@x.values), unlist(logistic.pr@y.values), 
+                    xout = gbm_pr_data$recall)$y
+)
+
+knn_pr_data <- data.frame(
+  recall = approx(unlist(knn.pr@x.values), unlist(knn.pr@y.values), 
+                 xout = gbm_pr_data$recall)$x,
+  precision = approx(unlist(knn.pr@x.values), unlist(knn.pr@y.values), 
+                    xout = gbm_pr_data$recall)$y
+)
+
+# ==============================================================================
+# COMBINE ALL DATA
+# ==============================================================================
+
+all_pr_data <- gbm_pr_data
+
+# Add precision values for other models
+all_pr_data$gbm_precision <- gbm_pr_data$precision
+all_pr_data$rf_precision <- rf_pr_data$precision
+all_pr_data$logistic_precision <- logistic_pr_data$precision
+all_pr_data$knn_precision <- knn_pr_data$precision
+
+# Calculate precision differences relative to boosted trees
+all_pr_data$gbm_precision_difference <- gbm_pr_data$precision - all_pr_data$precision
+all_pr_data$rf_precision_difference <- rf_pr_data$precision - all_pr_data$precision
+all_pr_data$logistic_precision_difference <- logistic_pr_data$precision - all_pr_data$precision
+all_pr_data$knn_precision_difference <- knn_pr_data$precision - all_pr_data$precision
+
+# ==============================================================================
+# PLOT 1: PRECISION-RECALL CURVES FOR ALL MODELS
+# ==============================================================================
+
+#pdf("undocumented_pr_curves.pdf", family="Times", width=9)
+png("undocumented_pr_curves.png", width = 22*100, height = 16*100, res = 300, family = "Times")
+
+op <- par(family = "serif")
+
+plot(all_pr_data$recall, all_pr_data$precision, type = "l", pch = 19,
+     col = "yellow", xlab = "Recall", ylab = "Precision",
+     lwd = 3, ylim=c(0, 1), xlim = c(0,1), lty = 1, cex.lab=1.5, cex.axis=1)
+
+lines(all_pr_data$recall, all_pr_data$rf_precision, type = "l", 
+      col = "blue", lwd = 3, lty = 2)
+lines(all_pr_data$recall, all_pr_data$logistic_precision, type = "l",
+      col = "red", lwd = 3, lty = 3)
+lines(all_pr_data$recall, all_pr_data$knn_precision, type = "l",
+      col = "green", lwd = 3, lty = 4)
+
+legend(x = 0.5, y = 1, 
+       col = c("white", "yellow", "blue", "red", "green"),
+       lwd = c(3, 3, 3, 3, 3, 3), 
+       lty = c(0, 1, 2, 3, 4, 5),
+       legend = c("Model:", "Gradient-Boosting Trees", "Random Forest", "Logistic", "KNN"),
+       bty = 'n', cex = 1.25, ncol = 1, seg.len = 6)
+
+# Add random baseline
+total_undocu <- sum(test_gbm_num$undocu_likely == 1)
+random_baseline <- total_undocu / nrow(test_gbm_num)
+abline(h = random_baseline, lty = 2, col = "gray")
+# Add text label for random baseline
+text(0.5, random_baseline + 0.05, 
+     paste("Random baseline:", round(random_baseline, 3)), 
+     cex = 0.9, col = "gray30")
+
+
+dev.off()
+
+
+### Relative Pr-Re curves ###
+
+png("undocumented_precision_differences.png", width = 22*100, height = 16*100, res = 300, family = "Times")
+
+op <- par(family = "serif")
+
+plot(all_pr_data$recall, all_pr_data$rf_precision_difference, type = "l", pch = 19, 
+     col = "blue", xlab = "Recall Relative to Boosted Trees", ylab = "Precision", 
+     lwd = 3, ylim = c(-0.3, 0.1), xlim = c(0,1), lty = 2, cex.lab=1.5, cex.axis=1)
+
+lines(all_pr_data$recall, all_pr_data$logistic_precision_difference, type = "l", 
+      col = "red", lwd = 3, lty = 3)
+lines(all_pr_data$recall, all_pr_data$knn_precision_difference, type = "l",
+      col = "green", lwd = 3, lty = 4)
+
+legend(x = 0.5, y = -0.1, 
+       col = c("white", "blue", "red", "green"),
+       lwd = c(3, 3, 3, 3), 
+       lty = c(0, 2, 3, 4),
+       legend = c("Model:", "Random Forest", "Logistic", "KNN"),
+       bty = 'n', cex = 1.25, ncol = 1, seg.len = 5)
+
+abline(h = 0, lty = 2, col = "gray")
+# Add text label for random baseline
+text(0.5, 0.05, 
+     paste("GBM baseline:", round(0, 3)), 
+     cex = 0.9, col = "gray30")
+
+dev.off()
+```
+
+*undocu_likely* age *married* nonfluent *spanish_hispanic_latino* central_latino *bpl_asia* household_size *poverty* asian *black* white *other_race* employed *years_us* yrsed
+
+<https://bradleyboehmke.github.io/HOML/process.html> Sensitivity: $\frac{TP}{TP + FN}$ Specificity: $\frac{TN}{TN + FP}$ Precision / Positive-predictive value: $\frac{TP}{TP + FP}$ Accuracy: $\frac{TP + TN}{total}$
+
+# American Community Survey (ACS)
+
+## Preparing main dataset to introduce ML results
+
+```{r Loading ACS data}
+#| cache: true
+#| results: hold
+#| message: false
+#| warning: false
+
+setwd(data_path)
+
+ACS_variables <- c("hisp", "spanish", "race", "bpld", "empstat", "poverty", "married", "cit_spouse", "nonfluent", "bpl_asia", "asian", "black", "white", "fem", "numprec", "yrsusa1", "hinscare", "hinscaid", "undocu", "bpl_usa", "age", "yrsed")  
+
+
+ACS <- read_csv("ML Training Sample.csv")
+View(ACS)
+```
+
+```{r Preparing ACS data}
+#| cache: true
+#| results: hold
+#| message: false
+#| warning: false
+
+ACS_sipp <- ACS %>%
+  mutate(
+    spanish_hispanic_latino = as.factor(ifelse(hisp==1 | spanish==1, 1, 0)),
+    central_latino = as.factor(ifelse((hisp==1) & (bpld=="belize/british honduras" | bpld=="costa rica" | bpld=="el salvador" | bpld=="guatemala" | bpld=="honduras" | bpld=="nicaragua" | bpld=="panama" | bpld=="mexico"), 1, 0)),
+    black = as.factor(ifelse(race=="black/african america", 1, 0)),
+    white = as.factor(ifelse(race=="white", 1, 0)),
+    employed = as.factor(ifelse(empstat==1, 1, 0)),
+    poverty = as.factor(ifelse(poverty<100, 1, 0)),
+    married = as.factor(married),
+    cit_spouse = as.factor(cit_spouse),
+    nonfluent = as.factor(nonfluent),
+    bpl_asia = as.factor(bpl_asia),
+    asian = as.factor(asian),
+    fem = as.factor(fem),
+    household_size = numprec,
+    #Change SIPP 0 years_us to NA
+    years_us = yrsusa1,
+    medicare = as.factor(ifelse(hinscare=="yes", 1, 0)),
+    medicaid = as.factor(ifelse(hinscaid=="has insurance through medicaid", 1, 0))
+    
+  )
+ACS_sipp$years_us <- replace(ACS_sipp$years_us, ACS_sipp$yrsusa1=="n/a or less than one year" & ACS_sipp$bpl_usa==1, NA)
+ACS_sipp$years_us <- replace(ACS_sipp$years_us, ACS_sipp$yrsusa1=="n/a or less than one year" & ACS_sipp$bpl_usa==0, 0)
+ACS_sipp$years_us <- as.numeric(ACS_sipp$years_us)
+
+ACS_sipp$other_race <- as.factor(ifelse(ACS$black!=1 & ACS$white!=1 & ACS$asian!=1, 1, 0))
+ACS_sipp_na <- ACS_sipp  %>%
+  filter(undocu==1, !is.na(years_us),!is.na(medicaid), !is.na(age),!is.na(fem), !is.na(married),!is.na(cit_spouse), !is.na(nonfluent),  !is.na(spanish_hispanic_latino), !is.na(central_latino), !is.na(bpl_asia), !is.na(household_size), !is.na(poverty), !is.na(asian), !is.na(black), !is.na(white), !is.na(other_race), !is.na(employed),  !is.na(yrsed))
+
+ACS_cols_numeric <- c("central_latino", "bpl_asia", "medicaid", "age", "fem", "married", "cit_spouse", "nonfluent", "spanish_hispanic_latino", "household_size", "poverty", "asian", "black", "white", "other_race", "employed", "years_us","yrsed")
+
+ACS_sipp_knn <- ACS_sipp_na %>%
+  mutate_at(ACS_cols_numeric, as.numeric)
 ```
