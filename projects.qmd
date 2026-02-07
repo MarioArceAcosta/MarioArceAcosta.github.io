@@ -1,0 +1,22 @@
+---
+title: "Projects Gallery"
+listing:
+  contents:
+    - research.qmd
+    - msrip_symposium.qmd
+    - dashboard.qmd
+    - xcite_dashboard.qmd
+  type: grid         # Creates the "Card" look
+  sort: "date desc"
+  categories: true   # Adds filter buttons (e.g., "R", "SQL", "Consulting")
+  fields: [image, date, title, description]
+---
+
+## Selected Works
+
+Below are case studies demonstrating my work in Econometrics and Data Science.
+
+
+
+
+

@@ -8,15 +8,25 @@ website:
     right:
       - href: index.qmd
         text: Home
-      - href: dashboard.qmd
-        text: Interactive Analytics
+
       - text: "Research"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
+        - href: dashboard.qmd
+          text: (In Progress) Interactive Descriptive Statistics
         - href: research.qmd
           text: ML Research
-        - text: "---"  # <--- This creates a horizontal divider line
         - href: leading_model.qmd
           text: ML Leading Model
+          
+      - text: "Other Work"       # The Header Name (e.g., 'Research', 'Portfolio')
+        menu:
+        - href: projects.qmd
+          text: Portfolio
+        - href: presentations.qmd
+          text: Conferences & Presentations
+        - href: freelance.qmd
+          text: Freelancing
+        
       - href: media/_Academic__Mario_CV.pdf
         text: CV
 
@@ -27,6 +37,9 @@ format:
       light: minty
     css: styles.css
     toc: true
+filters:
+  - lightbox
+lightbox: auto  # Automatically makes images zoomable
 
 editor: visual
 

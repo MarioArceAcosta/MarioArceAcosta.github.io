@@ -62,7 +62,7 @@ GROUP BY edu_cat, degfield_group, stem_deg, gov_worker, spanish_hispanic_latino,
 df_counts = pd.read_sql(counts_query, engine)
 ```
 
-# Map
+# Demographics (Bar Chart)
 
 ##  {.sidebar}
 
@@ -71,6 +71,118 @@ This dashboard analyzes labor market trends and immigration flows.
 -   **Filters:** Use the dropdowns on the charts to filter by Year.
 -   **Tech Stack:** Python, Plotly, PostgreSQL.
 -   **Data Source:** Sample Labor Statistics.
+
+## Row {.fill}
+
+```{python}
+#| echo: false
+#| fig-show: hide
+#| include: false
+
+
+import plotly.graph_objects as go
+import pandas as pd
+
+# (Assuming df_counts is already loaded)
+variables = ['edu_cat', 'degfield_group', 'stem_deg', 'gov_worker', 'spanish_hispanic_latino', 'nonfluent', 'fem']
+
+fig = go.Figure()
+
+# --- 1. DESIGN CHOICE: Professional Color ---
+BAR_COLOR = '#2E86C1' 
+
+for var in variables:
+    summary = df_counts.groupby(var)['total'].sum().reset_index()
+    
+    # Logic to fix long labels in the legend/hover
+    clean_name = var.replace('_', ' ').title()
+    if "Hispanic" in clean_name:
+        clean_name = "Hispanic/Latino"
+
+    fig.add_trace(
+        go.Bar(
+            x=summary[var], 
+            y=summary['total'], 
+            name=clean_name,
+            visible=(var == variables[0]),
+            
+            # --- IMPROVEMENT: Custom Color & Text ---
+            marker_color=BAR_COLOR,       
+            text=summary['total'],        
+            texttemplate='%{text:,.0f}',  
+            textposition='auto',          
+            hovertemplate='<b>%{x}</b><br>Count: %{y:,.0f}<extra></extra>' 
+        )
+    )
+
+# --- 2. IMPROVEMENT: Smart Buttons ---
+buttons = []
+for i, var in enumerate(variables):
+    visibility = [False] * len(variables)
+    visibility[i] = True
+    
+    # Inside the loop creating buttons:
+    clean_label = var.replace('_', ' ').title()
+
+    # Add extra spaces to the end of the text to force the box wider
+    # This doesn't show up visually but forces the container to expand
+    button_label = clean_label + "          " 
+
+    button = dict(
+        label=button_label,  # Use the padded label here
+        method="update",
+        args=[
+            {"visible": visibility}, 
+            {"title": f"Total Count by {clean_label}"}
+        ]
+    )
+    buttons.append(button)
+
+# --- 3. IMPROVEMENT: Clean Layout ---
+fig.update_layout(
+    template="plotly_white", 
+    
+    updatemenus=[dict(
+        type="dropdown",  
+        direction="down",
+        active=0,
+        buttons=buttons,
+        
+        # --- FIX: Force Width with Padding ---
+        # 'r': 80 adds 80px of padding to the right, elongating the button.
+        # 't': 10 gives it space from the top.
+        pad={"r": 80, "t": 10}, 
+        
+        x=0.0, 
+        y=1.2,
+        xanchor="left", 
+        yanchor="top",
+        bgcolor='white',  
+        bordercolor='lightgrey'
+    )],
+    
+    title=dict(
+        text=f"Total Count by {variables[0].replace('_', ' ').title()}",
+        font=dict(size=20),
+        y=0.95 # Ensure title doesn't overlap with menu
+    ),
+    
+    xaxis=dict(title="Category", tickfont=dict(size=12)),
+    yaxis=dict(title="Total Count", showgrid=True, gridcolor='lightgrey'),
+    
+    # --- FIX: Increased Top Margin ---
+    # Increased 't' to 150 to ensure the menu doesn't get cut off by the browser
+    margin=dict(t=150, b=50, l=50, r=50)
+)
+```
+
+```{python}
+fig.show()
+```
+
+
+# Map
+
 
 ## Row {.fill}
 
@@ -97,56 +209,3 @@ fig_map
 fig_map
 ```
 
-# Any bar chart
-
-```{python}
-#| echo: false
-#| fig-show: hide
-#| include: false
-variables = ['edu_cat', 'degfield_group', 'stem_deg', 'gov_worker', 'spanish_hispanic_latino', 'nonfluent', 'fem']
-
-fig = go.Figure()
-
-# 1. Build a separate bar chart (trace) for every variable in your list
-for var in variables:
-    summary = df_counts.groupby(var)['total'].sum().reset_index()
-    
-    fig.add_trace(
-        go.Bar(
-            x=summary[var], 
-            y=summary['total'], 
-            name=var,
-            visible=(var == variables[0])
-        )
-    )
-
-# 2. Create the Dropdown Buttons
-buttons = []
-for i, var in enumerate(variables):
-    visibility = [False] * len(variables)
-    visibility[i] = True
-    
-    button = dict(
-        label=var.replace('_', ' ').title(),
-        method="update",
-        args=[{"visible": visibility}, {"title": f"Count by {var.title()}"}]
-    )
-    buttons.append(button)
-
-# 3. Add the UI Menu to the Layout
-fig.update_layout(
-    updatemenus=[dict(
-        active=0,
-        buttons=buttons,
-        x=0.1, y=1.2,
-        showactive=True
-    )],
-    title=f"Count by {variables[0].title()}",
-    xaxis_title="Category",
-    yaxis_title="Total Count"
-)
-```
-
-```{python}
-fig.show()
-```

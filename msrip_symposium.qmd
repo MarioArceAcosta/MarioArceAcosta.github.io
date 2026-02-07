@@ -1,0 +1,25 @@
+---
+title: "MSRIP Symposium"
+format: 
+  html:
+    toc: false
+image: /media/msrip_poster.png
+description: "Summer research in collaboration with Dr. Veronica Sovero from the UCR Economics department as my mentor. "
+date: August 21, 2024
+---
+
+
+## Mind the Gap (MSRIP) UCR summer research program/symposium
+University of California, Riverside
+
+::: {layout-ncol="2"}
+![**Poster:** Summer research poster summarizing reseach initiative with Dr. Sovero](media/ArceAcosta_Mario_poster_08_11_24.png){group="my-gallery"}
+
+![Image of me in front of my poster](media/msrip_poster.png){group="my-gallery"}
+
+![Image with some peers I met through the program](media/msrip_group_2.png){group="my-gallery"}
+
+![Image where I am presenting my research to a peer.](media/msrip_poster_2.jpg){group="my-gallery"}
+:::
+
+We used an extract from the American Community Survey (ACS) and Stata's statistical software to examine educational mismatch rates of DACA eligible college graduates and the wage penalty they receive for their legal status.

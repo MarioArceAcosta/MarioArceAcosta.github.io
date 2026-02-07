@@ -14,27 +14,3 @@ about:
 ---
 
 Hello, nice to meet you! My name is Mario, and my academic background consists of a B.S. in Applied Mathematics/Economics and a Minor in Business Analytics. I am currently studying Statistics for a Master's in Science program at the University of California, Davis. I am proud to state that I presented my research at the Population Association of America 2025 Annual Conference, and that I will be presenting research at the 2025 Association for Public Policy Analysis & Management Conference!
-
-Some of the statistical analysis services I offer are:
-
-✅Linear/nonlinear regression, probability modeling (LPM, logistic)
-
-✅ A/B tests, T-tests, Chi-squared Tests, Hausman test, etc.
-
-✅Panel (longitudinal) data analysis (Random/fixed/mixed effects)
-
-✅Clustering, population weights, standardized coefficients
-
-✅Event study / Difference-in-Differences (DiD)
-
-✅Machine learning in R (logistic, KNN, Random Forests, etc.)
-
-I also offer the following services:
-
-✅ Tutoring (Statistics, Economics, and Mathematics)
-
-✅Consultations in data governance and dashboards
-
-Beyond college work and capstone projects (econometrics of Airbnb prices in Mexico using R; analysis of H-1B sponsor rates by industry type and location), I have also worked as a data analytics intern and as a research fellow (for which my research extended past the program). I have also taken courses in Coursera by IBM on data analysis (Python, Excel, AI), and have received certificates of completion.
-
-In a year-long data analytics intern position, I learned how to create and implement a database into our center's initiative on analyzing academic technology usage. I reached out to technology vendors of the university, requesting data extracts and communicating with them on the interpretation of data. I streamlined data collection, and organized all data into a database that is still used at the center. I cleaned and prepared several spreadsheets with hundreds of thousands of rows within Google Sheets, and provided key metrics through dashboards and reports in Google Looker Studio. I connected this data and made it accessible through Slack. I reported on my progress through Slack, Asana, and Zoom meetings (disseminating findings through bi-weekly meetings). I implemented data governance policies and facilitated meetings on data governance. I wrote a document on data governance. I wrote, recorded, and hosted trainings for my colleagues in Looker Studio. Overall, I became an expert at Google Sheets, Looker Studio, and communicating data analyses through visualizations. Providing data-driven insights through story-telling.

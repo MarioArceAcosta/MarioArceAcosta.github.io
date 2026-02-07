@@ -14,6 +14,10 @@ format:
     number-sections: true    # Adds "1.1, 1.2" structure for rigor
 ---
 
+# Abstract
+
+This study estimates the extent of education–occupation mismatch and the associated wage penalties for undocumented college graduates. Using data from the American Community Survey (ACS), we classify workers as vertically mismatched (higher educational attainment than is typical for the occupation) or horizontally mismatched (field of degree is not typical for the occupation). Because the ACS does not identify undocumented status, we train machine learning models on the Survey of Income and Program Participation (SIPP) and use the predictions to impute status in the ACS. This approach enables new analyses of labor market outcomes for undocumented college graduates in nationally representative surveys. Results indicate that undocumented status is linked to higher rates of both vertical and horizontal mismatch, as well as wage penalties of roughly 4–7 percent. These penalties are smaller among the DACA-eligible and in states with more inclusive immigrant policy climates.
+
 # Libraries
 
 ```{r Libraries}
@@ -639,13 +643,19 @@ text(0.5, 0.05,
 dev.off()
 ```
 
-*undocu_likely* age *married* nonfluent *spanish_hispanic_latino* central_latino *bpl_asia* household_size *poverty* asian *black* white *other_race* employed *years_us* yrsed
+-   Sensitivity: $\frac{TP}{TP + FN}$
 
-<https://bradleyboehmke.github.io/HOML/process.html> Sensitivity: $\frac{TP}{TP + FN}$ Specificity: $\frac{TN}{TN + FP}$ Precision / Positive-predictive value: $\frac{TP}{TP + FP}$ Accuracy: $\frac{TP + TN}{total}$
+-   Specificity: $\frac{TN}{TN + FP}$
+
+-   Precision / Positive-predictive value: $\frac{TP}{TP + FP}$
+
+-   Accuracy: $\frac{TP + TN}{total}$
+
+Source: <https://bradleyboehmke.github.io/HOML/process.html>
 
 # American Community Survey (ACS)
 
-## Preparing main dataset to introduce ML results
+## Loading Data
 
 ```{r Loading ACS data}
 #| cache: true
@@ -661,6 +671,8 @@ ACS_variables <- c("hisp", "spanish", "race", "bpld", "empstat", "poverty", "mar
 ACS <- read_csv("ML Training Sample.csv")
 View(ACS)
 ```
+
+## Preparing main data set to introduce ML results
 
 ```{r Preparing ACS data}
 #| cache: true

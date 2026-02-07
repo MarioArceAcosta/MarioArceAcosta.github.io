@@ -1,0 +1,26 @@
+---
+title: "XCITE Center for Teaching and Learning Dashboard on Academic Technology Usage"
+format:
+  html:
+    toc: false
+image: /media/xcite_dashboard.png
+date: August 21, 2024
+---
+
+## A year-long initiative as a data analytics intern
+
+University of California, Riverside
+
+<iframe width="100%" height="650px" src="https://lookerstudio.google.com/embed/reporting/0ec4b918-5179-4c72-8d52-8a713638d4e1/page/6zXD" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+
+</iframe>
+
+A year-long project consisting of:
+
+-   Gathering data from academic learning tool vendors
+
+-   Cleaning, preparing, and organizing data into a database
+
+-   Analyzing and presenting the analysis in a data reporting tool through dashboards
+
+-   Disseminating the insights and key metrics to supervisors and stakeholders
