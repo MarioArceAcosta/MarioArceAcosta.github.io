@@ -1,5 +1,5 @@
 ---
-title: "Projects Gallery"
+title: "Portfolio"
 listing:
   contents:
     - research.qmd

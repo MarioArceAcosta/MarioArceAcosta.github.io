@@ -1,5 +1,6 @@
 ---
 title: "XCITE Center for Teaching and Learning Dashboard on Academic Technology Usage"
+categories: [Dashboard, Data Management, Higher Education]
 format:
   html:
     toc: false

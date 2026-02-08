@@ -2,6 +2,8 @@
 title: "Using Machine Learning to Estimate the Effect of Undocumented Status on Education-Occupation Mismatch for College Graduates"
 author: "Dr. Veronica Sovero and Mario Arce Acosta"
 date: last-modified
+categories: [Research, ML, Economics, Higher Education]
+image: /research_files/figure-html/GBM Performance-1.png
 format:
   html:
     toc: true                # Floating Table of Contents

@@ -1,5 +1,6 @@
 ---
 title: "Leading ML Model"
+categories: [Research, ML, Economics, Higher Education]
 format:
   html:
     toc: true                # Floating Table of Contents

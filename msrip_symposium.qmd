@@ -1,5 +1,6 @@
 ---
 title: "MSRIP Symposium"
+categories: [Research, Economics, Higher Education]
 format: 
   html:
     toc: false

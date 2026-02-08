@@ -1,5 +1,6 @@
 ---
 title: "Conferences & Presentations"
+categories: [Research, ML, Economics, Higher Education]
 date: last-modified
 image: /media/appam_2025_1.JPG
 description: "Presentations on different stages of research with Dr. Veronica Sovero from the Department of Economics at the University of California, Riverside."

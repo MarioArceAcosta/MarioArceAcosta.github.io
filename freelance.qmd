@@ -1,5 +1,5 @@
 ---
-title: "freelance"
+title: "Freelancing"
 format: html
 ---
 

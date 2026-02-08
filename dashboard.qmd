@@ -1,6 +1,7 @@
 ---
 title: "Dashboard"
 engine: knitr
+categories: [Research, Dashboard Economics, Higher Education]
 format: 
   dashboard:
     orientation: columns
