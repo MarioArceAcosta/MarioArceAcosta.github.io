@@ -9,8 +9,8 @@ description: "Summer research in collaboration with Dr. Veronica Sovero from the
 date: August 21, 2024
 ---
 
-
 ## Mind the Gap (MSRIP) UCR summer research program/symposium
+
 University of California, Riverside
 
 ::: {layout-ncol="2"}

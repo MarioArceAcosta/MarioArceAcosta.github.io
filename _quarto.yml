@@ -9,14 +9,16 @@ website:
       - href: index.qmd
         text: Home
 
-      - text: "Research"       # The Header Name (e.g., 'Research', 'Portfolio')
+      - text: "Edu-Occ ML Research"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
         - href: dashboard.qmd
           text: (In Progress) Interactive Descriptive Statistics
         - href: research.qmd
-          text: ML Research
+          text: ML Model Comparisons
         - href: leading_model.qmd
-          text: ML Leading Model
+          text: Leading Model Performance
+        - href: stata_analysis.qmd
+          text: Regression Analysis
           
       - text: "Other Work"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
@@ -27,7 +29,7 @@ website:
         - href: freelance.qmd
           text: Freelancing
         
-      - href: media/_Academic__Mario_CV.pdf
+      - href: files/_Academic__Mario_CV.pdf
         text: CV
 
 format:
