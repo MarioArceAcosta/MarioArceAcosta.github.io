@@ -3,7 +3,7 @@ title: "Regression Analysis"
 format: html
 ---
 
-``` Stata
+``` stata
 clear matrix
 clear mata
 clear
@@ -79,7 +79,7 @@ esttab logical_vmismatch gbmhigh_vmismatch gbmrecall_vmismatch gbmlow_vmismatch 
          " Robust standard errors are clustered by state.")
 
 
-	
+    
 
 // Horizontal Undermatch 
 clear matrix
@@ -122,10 +122,10 @@ esttab logical_hunder gbmhigh_hunder gbmrecall_hunder gbmlow_hunder ///
          " broad degree category indicators, years of schooling, and state×year interaction fixed effects." ///
          " Robust standard errors are clustered by state.")
 
-	
+    
 
 
-**********************************************************************************	
+**********************************************************************************  
 ****************Wage models with demographic columns/samples**************************
 **************************************************************************************
 clear matrix
@@ -169,7 +169,7 @@ esttab logical_wage gbmhigh_wage gbmrecall_wage gbmlow_wage ///
          " Robust standard errors are clustered by state.")
 ```
 
-``` Stata
+``` stata
 **Coefficient Plots****
 /* 
 *vertical mismatch
@@ -200,7 +200,7 @@ coefplot (logical_vmismatch, label(Logical Edits) ) (knn_vmismatch, label(KNN) )
 ||  (logical_wage, label(Logical Edits) ) (knn_wage, label(KNN) ) (rf_wage, label(Random Forest)), bylabel(Log Wage) ///
 ||, drop($covars vmismatched hundermatched hovermatched)  xline(0)  ///
 rename(elig_rf = "DACA-eligible" elig= "DACA-eligible" elig_knn= "DACA-eligible") 
-graph export elig_ipc_coeff.png, replace			
-	
+graph export elig_ipc_coeff.png, replace            
+    
 */
 ```

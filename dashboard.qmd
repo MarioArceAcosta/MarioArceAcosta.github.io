@@ -89,91 +89,86 @@ variables = ['edu_cat', 'degfield_group', 'stem_deg', 'gov_worker', 'spanish_his
 
 fig = go.Figure()
 
-# --- 1. DESIGN CHOICE: Professional Color ---
 BAR_COLOR = '#2E86C1' 
 
+# 1. Create Traces
 for var in variables:
     summary = df_counts.groupby(var)['total'].sum().reset_index()
     
-    # Logic to fix long labels in the legend/hover
     clean_name = var.replace('_', ' ').title()
-    if "Hispanic" in clean_name:
-        clean_name = "Hispanic/Latino"
+    if "Hispanic" in clean_name: clean_name = "Hispanic/Latino"
 
     fig.add_trace(
         go.Bar(
             x=summary[var], 
             y=summary['total'], 
             name=clean_name,
-            visible=(var == variables[0]),
-            
-            # --- IMPROVEMENT: Custom Color & Text ---
+            visible=(var == variables[0]), 
             marker_color=BAR_COLOR,       
             text=summary['total'],        
             texttemplate='%{text:,.0f}',  
-            textposition='auto',          
+            textposition='auto',
             hovertemplate='<b>%{x}</b><br>Count: %{y:,.0f}<extra></extra>' 
         )
     )
 
-# --- 2. IMPROVEMENT: Smart Buttons ---
+# 2. Create Buttons (With BOTH Color and Padding Logic)
 buttons = []
+
+# --- THE FIX: Re-adding the padding ---
+# This pushes the text to the right, creating the "Label next to button" illusion
+pad_prefix = "\u00A0" * 8  
+
 for i, var in enumerate(variables):
     visibility = [False] * len(variables)
     visibility[i] = True
     
-    # Inside the loop creating buttons:
     clean_label = var.replace('_', ' ').title()
-
-    # Add extra spaces to the end of the text to force the box wider
-    # This doesn't show up visually but forces the container to expand
-    button_label = clean_label + "          " 
-
+    if "Hispanic" in clean_label: clean_label = "Hispanic/Latino"
+    
+    # We combine the Padding + The Label
+    final_label = f"{pad_prefix}{clean_label}"
+    
     button = dict(
-        label=button_label,  # Use the padded label here
+        label=final_label,
         method="update",
-        args=[
-            {"visible": visibility}, 
-            {"title": f"Total Count by {clean_label}"}
-        ]
+        args=[{"visible": visibility}, {"title": f"Count by {clean_label}"}],
     )
     buttons.append(button)
 
-# --- 3. IMPROVEMENT: Clean Layout ---
+# 3. Layout (Sidebar + Active State)
 fig.update_layout(
     template="plotly_white", 
     
     updatemenus=[dict(
-        type="dropdown",  
+        type="buttons",
         direction="down",
         active=0,
         buttons=buttons,
         
-        # --- FIX: Force Width with Padding ---
-        # 'r': 80 adds 80px of padding to the right, elongating the button.
-        # 't': 10 gives it space from the top.
-        pad={"r": 80, "t": 10}, 
+        # --- HIGHLIGHT SETTINGS ---
+        showactive=True,       # Highlights the clicked button
+        bgcolor='#eeeeee',     # Light grey background for inactive buttons
+        bordercolor='white',   # White lines between buttons
+        borderwidth=2,
         
-        x=0.0, 
-        y=1.2,
+        # Position: Left Sidebar
+        x=-0.25,              
+        y=1.0,               
         xanchor="left", 
         yanchor="top",
-        bgcolor='white',  
-        bordercolor='lightgrey'
+        
+        # Extra padding inside the button box itself
+        pad={"r": 10, "t": 10}
     )],
     
     title=dict(
         text=f"Total Count by {variables[0].replace('_', ' ').title()}",
-        font=dict(size=20),
-        y=0.95 # Ensure title doesn't overlap with menu
+        x=0.05
     ),
     
-    xaxis=dict(title="Category", tickfont=dict(size=12)),
-    yaxis=dict(title="Total Count", showgrid=True, gridcolor='lightgrey'),
-    
-    # --- FIX: Increased Top Margin ---
-    # Increased 't' to 150 to ensure the menu doesn't get cut off by the browser
-    margin=dict(t=150, b=50, l=50, r=50)
+    # Ensure margin is wide enough for the padded text
+    margin=dict(t=50, b=50, l=250, r=50) 
 )
 ```
 
@@ -181,9 +176,7 @@ fig.update_layout(
 fig.show()
 ```
 
-
 # Map
-
 
 ## Row {.fill}
 
@@ -209,4 +202,3 @@ fig_map
 ### Always important that code with plots has #| include: false in it, as well as this follow up chunk where the figure is explicitly called
 fig_map
 ```
-
