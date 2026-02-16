@@ -9,7 +9,7 @@ website:
       - href: index.qmd
         text: Home
 
-      - text: "Edu-Occ ML Research"       # The Header Name (e.g., 'Research', 'Portfolio')
+      - text: "Research"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
         - href: dashboard.qmd
           text: (In Progress) Interactive Descriptive Statistics
