@@ -24,7 +24,7 @@ py_config()
 ```
 
 ```{python}
-#| include: false
+#| include: true
 ###################FIRST QUERY#####################
 import pandas as pd
 import plotly.express as px
@@ -56,14 +56,16 @@ SELECT
 	  spanish_hispanic_latino,
 	  nonfluent,
 	  fem,
+	  gbm_high_recall,
     COUNT(*) as total
 FROM acs_immigration_data
-GROUP BY edu_cat, degfield_group, stem_deg, gov_worker, spanish_hispanic_latino, nonfluent, fem;
+GROUP BY 
+    edu_cat, degfield_group, stem_deg, gov_worker, spanish_hispanic_latino, nonfluent, fem, gbm_high_recall;
 """
 df_counts = pd.read_sql(counts_query, engine)
 ```
 
-# Demographics (Bar Chart)
+# Demographics (grouped bar)
 
 ##  {.sidebar}
 
@@ -80,95 +82,141 @@ This dashboard analyzes labor market trends and immigration flows.
 #| fig-show: hide
 #| include: false
 
-
 import plotly.graph_objects as go
 import pandas as pd
 
-# (Assuming df_counts is already loaded)
-variables = ['edu_cat', 'degfield_group', 'stem_deg', 'gov_worker', 'spanish_hispanic_latino', 'nonfluent', 'fem']
-
+# 1. SETUP
+variables = ['degfield_group', 'stem_deg', 'gov_worker', 'spanish_hispanic_latino', 'nonfluent', 'fem']
 fig = go.Figure()
 
-BAR_COLOR = '#2E86C1' 
+# Colors
+COLOR_TOTAL = '#D3D3D3'  # Light Grey
+COLOR_SUB   = '#2E86C1'  # Strong Blue
 
-# 1. Create Traces
+target_group = '1' 
+
 for var in variables:
-    summary = df_counts.groupby(var)['total'].sum().reset_index()
+    # --- A. Total Population (Grey) ---
+    summary_total = df_counts.groupby(var)['total'].sum().reset_index()
+    summary_total['pct'] = (summary_total['total'] / summary_total['total'].sum()) * 100
     
+    # --- B. Subgroup (Blue) ---
+    df_sub = df_counts[df_counts['gbm_high_recall'].astype(str).str.strip() == target_group]
+    summary_sub = df_sub.groupby(var)['total'].sum().reset_index()
+    
+    total_sub_count = summary_sub['total'].sum()
+    if total_sub_count > 0:
+        summary_sub['pct'] = (summary_sub['total'] / total_sub_count) * 100
+    else:
+        summary_sub['pct'] = 0
+
+    # --- C. Cleaning & Mapping ---
+    for df_temp in [summary_total, summary_sub]:
+        if df_temp.empty: continue
+        
+        if var == 'stem_deg':
+            df_temp[var] = df_temp[var].astype(str).map({'1': 'STEM Degree', '1.0': 'STEM Degree', '0': 'Non-STEM', '0.0': 'Non-STEM'}).fillna(df_temp[var])
+        elif var == 'fem':
+            df_temp[var] = df_temp[var].astype(str).map({'0': 'Male', '1': 'Female'}).fillna('Unknown')
+        elif var == 'nonfluent':
+            df_temp[var] = df_temp[var].astype(str).map({'1': 'Not Fluent', '0': 'Fluent'}).fillna(df_temp[var])
+        elif var == 'spanish_hispanic_latino':
+             df_temp[var] = df_temp[var].astype(str).map({'1': 'Hispanic/Latino', '0': 'Not Hispanic'}).fillna('Other')
+        elif var == 'gov_worker':
+             df_temp[var] = df_temp[var].astype(str).map({'1': 'Gov Worker', '0': 'Private Sector'}).fillna('Other')
+
+    # Legend Names
     clean_name = var.replace('_', ' ').title()
-    if "Hispanic" in clean_name: clean_name = "Hispanic/Latino"
+    if var == 'stem_deg': clean_name = "STEM Status"
+    if var == 'degfield_group': clean_name = "Field of Degree"
+    if var == 'gov_worker': clean_name = "Work Sector"
+    if var == 'nonfluent': clean_name = "English Proficiency"
+    if "Hispanic" in clean_name: clean_name = "Ethnicity"
+    if "Fem" in clean_name: clean_name = "Gender"
 
-    fig.add_trace(
-        go.Bar(
-            x=summary[var], 
-            y=summary['total'], 
-            name=clean_name,
-            visible=(var == variables[0]), 
-            marker_color=BAR_COLOR,       
-            text=summary['total'],        
-            texttemplate='%{text:,.0f}',  
-            textposition='auto',
-            hovertemplate='<b>%{x}</b><br>Count: %{y:,.0f}<extra></extra>' 
-        )
-    )
+    # --- D. Add Traces (WITH HOVER DATA) ---
+    fig.add_trace(go.Bar(
+        x=summary_total[var], 
+        y=summary_total['pct'],
+        name="Total Population",
+        visible=(var == variables[0]),
+        marker_color=COLOR_TOTAL,
+        customdata=summary_total['total'],
+        hovertemplate='<b>%{x}</b><br>Count: %{customdata:,}<br>Percent: %{y:.1f}%<extra></extra>'
+    ))
 
-# 2. Create Buttons (With BOTH Color and Padding Logic)
+    fig.add_trace(go.Bar(
+        x=summary_sub[var], 
+        y=summary_sub['pct'],
+        name="Undocumented",
+        visible=(var == variables[0]),
+        marker_color=COLOR_SUB,
+        customdata=summary_sub['total'],
+        hovertemplate='<b>%{x}</b><br>Count: %{customdata:,}<br>Percent: %{y:.1f}%<extra></extra>'
+    ))
+
+# 3. Buttons
 buttons = []
-
-# --- THE FIX: Re-adding the padding ---
-# This pushes the text to the right, creating the "Label next to button" illusion
-pad_prefix = "\u00A0" * 8  
+pad_prefix = "\u00A0" * 4
 
 for i, var in enumerate(variables):
-    visibility = [False] * len(variables)
-    visibility[i] = True
+    visibility = [False] * (len(variables) * 2)
+    visibility[2*i] = True
+    visibility[2*i + 1] = True
     
     clean_label = var.replace('_', ' ').title()
-    if "Hispanic" in clean_label: clean_label = "Hispanic/Latino"
+    if var == 'stem_deg': clean_label = "STEM Status"
+    if var == 'degfield_group': clean_label = "Field of Degree"
+    if var == 'gov_worker': clean_label = "Work Sector"
+    if var == 'nonfluent': clean_label = "English Proficiency"
+    if "Hispanic" in clean_label: clean_label = "Ethnicity"
+    if "Fem" in clean_label: clean_label = "Gender"
     
-    # We combine the Padding + The Label
-    final_label = f"{pad_prefix}{clean_label}"
-    
+    # Angle 45 (Slanted Right)
+    angle = 45 if var == 'degfield_group' else 0
+    # Increase bottom margin for Long Labels + Legend
+    margin_b = 200 if var == 'degfield_group' else 100
+
     button = dict(
-        label=final_label,
+        label=f"{pad_prefix}{clean_label}",
         method="update",
-        args=[{"visible": visibility}, {"title": f"Count by {clean_label}"}],
+        args=[
+            {"visible": visibility}, 
+            {
+                "title": f"Distribution by {clean_label}",
+                "xaxis.tickangle": angle,
+                "margin.b": margin_b,
+                "yaxis.title": "Percentage (%)"
+            }
+        ],
     )
     buttons.append(button)
 
-# 3. Layout (Sidebar + Active State)
-fig.update_layout(
-    template="plotly_white", 
+# 4. Layout 
+_ = fig.update_layout(
+    barmode='group',
+    template="plotly_white",
+    
+    # FIX: Legend at Bottom Center
+    legend=dict(
+        orientation="h",   # Horizontal
+        yanchor="top",     # Anchor to the top of the legend box
+        y=-0.35,           # Push it way down below the axis labels
+        xanchor="center",  # Center it
+        x=0.5
+    ),
+
+    xaxis=dict(tickangle=45 if variables[0] == 'degfield_group' else 0, automargin=True),
     
     updatemenus=[dict(
-        type="buttons",
-        direction="down",
-        active=0,
-        buttons=buttons,
-        
-        # --- HIGHLIGHT SETTINGS ---
-        showactive=True,       # Highlights the clicked button
-        bgcolor='#eeeeee',     # Light grey background for inactive buttons
-        bordercolor='white',   # White lines between buttons
-        borderwidth=2,
-        
-        # Position: Left Sidebar
-        x=-0.25,              
-        y=1.0,               
-        xanchor="left", 
-        yanchor="top",
-        
-        # Extra padding inside the button box itself
-        pad={"r": 10, "t": 10}
+        type="buttons", direction="down", active=0, buttons=buttons, showactive=True,
+        bgcolor='#eeeeee', bordercolor='white', borderwidth=2,
+        x=-0.25, y=1.0, xanchor="left", yanchor="top", pad={"r": 10, "t": 10}
     )],
+    title=dict(text=f"Distribution by Field of Degree", x=0.05),
     
-    title=dict(
-        text=f"Total Count by {variables[0].replace('_', ' ').title()}",
-        x=0.05
-    ),
-    
-    # Ensure margin is wide enough for the padded text
-    margin=dict(t=50, b=50, l=250, r=50) 
+    # Initial Margin (Must be large enough for the Degree Field labels + Legend)
+    margin=dict(t=50, b=200 if variables[0] == 'degfield_group' else 100, l=250, r=50)
 )
 ```
 
@@ -177,8 +225,6 @@ fig.show()
 ```
 
 # Map
-
-## Row {.fill}
 
 ```{python}
 #| echo: false
