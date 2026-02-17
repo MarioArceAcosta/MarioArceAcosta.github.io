@@ -65,7 +65,7 @@ GROUP BY
 df_counts = pd.read_sql(counts_query, engine)
 ```
 
-# Demographics (grouped bar)
+# Demographics
 
 ##  {.sidebar}
 
