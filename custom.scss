@@ -24,3 +24,17 @@ code {
   padding: 0.2em 0.4em;
   border-radius: 3px;
 }
+
+// Upwork Branded Button
+.btn-upwork {
+  background-color: #14a800 !important;
+  color: white !important;
+  border: none;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.btn-upwork:hover {
+  background-color: #118c00 !important;
+  transform: translateY(-2px);
+}
