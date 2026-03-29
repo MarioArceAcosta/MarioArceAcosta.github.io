@@ -11,9 +11,7 @@ website:
 
       - text: "Research"
         menu:
-        - href: dashboard.qmd
-          text: (In Progress) Interactive Descriptive Statistics
-        - href: http://127.0.0.1:7925/
+        - href: https://marceacosta.shinyapps.io/shiny/
           text: (In Progress) Shiny Dashboard
         - href: research.qmd
           text: ML Model Comparisons
