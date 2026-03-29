@@ -13,6 +13,8 @@ website:
         menu:
         - href: dashboard.qmd
           text: (In Progress) Interactive Descriptive Statistics
+        - href: http://127.0.0.1:7925/
+          text: (In Progress) Shiny Dashboard
         - href: research.qmd
           text: ML Model Comparisons
         - href: leading_model.qmd
