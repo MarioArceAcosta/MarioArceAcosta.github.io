@@ -69,11 +69,11 @@ df_counts = pd.read_sql(counts_query, engine)
 
 ##  {.sidebar}
 
-This dashboard provides visual insight on descriptive statistics of our sample.
+This dashboard analyzes labor market trends and immigration flows.
 
--   **Filters:** 1-year ACS estimates from 2009 to 2019 - filtered to only include "prime age" (i.e. 22-55 years old) workers with a 4-year college degree. All college graduates in our sample are employed and were not in school when they took the survey.
+-   **Filters:** Use the dropdowns on the charts to filter by Year.
 -   **Tech Stack:** Python, Plotly, PostgreSQL.
--   **Data Source:** American Community Survey (ACS).
+-   **Data Source:** Sample Labor Statistics.
 
 ## Row {.fill}
 
