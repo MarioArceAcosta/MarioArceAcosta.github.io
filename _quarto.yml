@@ -9,7 +9,7 @@ website:
       - href: index.qmd
         text: Home
 
-      - text: "Research"       # The Header Name (e.g., 'Research', 'Portfolio')
+      - text: "Research"
         menu:
         - href: dashboard.qmd
           text: (In Progress) Interactive Descriptive Statistics
@@ -34,14 +34,14 @@ website:
 
 format:
   html:
-    theme: 
-      dark: solar
-      light: minty
+    theme: #litera, sandstone, superhero
+      light: [litera, custom.scss]
+      dark: [superhero, custom.scss]
     css: styles.css
     toc: true
 filters:
   - lightbox
-lightbox: auto  # Automatically makes images zoomable
+lightbox: auto
 
 editor: visual
 

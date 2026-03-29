@@ -1,0 +1,26 @@
+/*-- scss:defaults --*/
+
+// 1. Force the Main Text Font for both themes
+$font-family-base: "Inter", "Lato", -apple-system, sans-serif !default;
+$headings-font-family: $font-family-base !default;
+
+// 2. Force the Code Block Font
+$font-family-monospace: "Fira Code", "Consolas", monospace !default;
+
+// 3. FORCE EXACT FONT SIZES (This locks the scale for both themes)
+$font-size-base: 1rem !default;       // Standard text (usually 16px)
+$h1-font-size:   2.5rem !default;     // Main Title (H1)
+$h2-font-size:   2.0rem !default;     // Page Headers (H2)
+$h3-font-size:   1.5rem !default;     // Section Headers (H3)
+$h4-font-size:   1.25rem !default;    // Small Headers (H4)
+$h5-font-size:   1rem !default;       // H5
+$h6-font-size:   0.875rem !default;   // H6
+
+/*-- scss:rules --*/
+
+// Keep inline code readable in both themes
+code {
+  background-color: rgba(128, 128, 128, 0.15);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}

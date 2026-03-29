@@ -35,12 +35,14 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-55eb9cf57951d3f24005548ba2d308ea.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-669eedb56ab0cd6524f32717187c10ce.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-55eb9cf57951d3f24005548ba2d308ea.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-941d7e14017e1a43777b60853515243b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-2924e029ebab37202f18e9f746cd122d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-9605d43f7a34c817a5a2cff0c4b52ee6.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-63dd30a9c3f432fb4448dbeccc6fe9d3.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-9605d43f7a34c817a5a2cff0c4b52ee6.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -215,8 +217,10 @@ ul.task-list li input[type="checkbox"] {
         changeGiscusTheme();
       }
     };
-    const authorPrefersDark = true;
+    const authorPrefersDark = false;
     const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
     let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
     // Dark / light mode switch
     window.quartoToggleColorScheme = () => {
@@ -255,10 +259,10 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-edu-occ-ml-research" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Edu-Occ ML Research</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-research" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Research</span>
     </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-edu-occ-ml-research">    
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-research">    
         <li>
     <a class="dropdown-item" href="./dashboard.html">
  <span class="dropdown-text">(In Progress) Interactive Descriptive Statistics</span></a>
@@ -317,7 +321,7 @@ ul.task-list li input[type="checkbox"] {
 <div class="quarto-about-trestles column-page">
   <div class="about-entity">
     <img src="media/Professional_headshot_suit.jpg" class="about-image
-  rounded " style="width: 20em;">
+  round " style="height: 20em; width: 20em;">
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Mario Arce Acosta</h1>
@@ -338,7 +342,9 @@ ul.task-list li input[type="checkbox"] {
   </div>
   <div class="about-contents"><main class="content column-page" id="quarto-document-content">
 
-<p>Hello, nice to meet you! My name is Mario, and my academic background consists of a B.S. in Applied Mathematics/Economics and a Minor in Business Analytics. I am currently studying Statistics for a Master’s in Science program at the University of California, Davis. I am proud to state that I presented my research at the Population Association of America 2025 Annual Conference, and that I will be presenting research at the 2025 Association for Public Policy Analysis &amp; Management Conference!</p>
+<p>Hello, nice to meet you! My name is Mario, and my academic background consists of a B.S. in Applied Mathematics/Economics and a Minor in Business Analytics. I am currently studying Statistics for a Master’s in Science program at the University of California, Davis.</p>
+<p>My special interests are machine learning, labor economics, and undocumented immigrants. I am currently</p>
+<p>I am proud to state that I presented my research at the Population Association of America 2025 Annual Conference, and that I will be presenting research at the 2025 Association for Public Policy Analysis &amp; Management Conference!</p>
 
 
 </main></div>
