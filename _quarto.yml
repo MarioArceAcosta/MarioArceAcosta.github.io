@@ -11,7 +11,7 @@ website:
 
       - text: "Research"
         menu:
-        - href: https://marceacosta.shinyapps.io/shiny/
+        - href: https://marioarceacosta.shinyapps.io/shiny/
           text: (In Progress) Shiny Dashboard
         - href: research.qmd
           text: ML Model Comparisons
