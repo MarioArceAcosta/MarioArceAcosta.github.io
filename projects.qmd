@@ -5,8 +5,8 @@ listing:
     - research.qmd
     - presentations.qmd
     - msrip_symposium.qmd
-    - dashboard.qmd
     - xcite_dashboard.qmd
+    - project_links.yml      # Automatically generates cards for all repos listed inside
   type: grid         # Creates the "Card" look
   sort: "date desc"
   categories: true   # Adds filter buttons (e.g., "R", "SQL", "Consulting")

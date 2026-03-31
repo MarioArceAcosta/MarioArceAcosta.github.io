@@ -14,8 +14,8 @@ about:
       href: https://github.com/MarioArceAcosta
 ---
 
-Hello, nice to meet you! My name is Mario, and my academic background consists of a B.S. in Applied Mathematics/Economics and a Minor in Business Analytics. I am currently studying Statistics for a Master's in Science program at the University of California, Davis.
+Hello, nice to meet you! My name is Mario, and I am currently studying Statistics through the Master's in Science program at the University of California, Davis. I also received my Bachelor's in Science in Applied Mathematics/Economics and a Minor in Business Analytics from the University of California Riverside.
 
-My special interests are machine learning, labor economics, and undocumented immigrants. I am currently conducting research on the labor market outcomes of undocumented college graduates using machine learning imputation methods.
+My special interests are machine learning, labor economics, and the role/experience of undocumented immigrants in the economy. I am currently conducting research on the labor market outcomes of undocumented college graduates using machine learning imputation methods.
 
-I am proud to state that I presented my research at the Population Association of America 2025 Annual Conference, and that I will be presenting research at the 2025 Association for Public Policy Analysis & Management Conference!
+I am proud to say that I have presented my research (coauthored with Dr. Veronica Sovero at UC Riverside) at national conferences such as at the Population Association of America (PAA) 2025 Annual Conference and the 2025 Association for Public Policy Analysis & Management (APPAM) Conference!

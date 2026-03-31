@@ -1,0 +1,21 @@
+- title: "Micromobility Traffic of City of Davis/UCD Webscraping"
+  description: "Capstone project for STA 220. City of Davis x Eco-Counter bike traffic data webscraping project"
+  path: https://github.com/MarioArceAcosta/STA-220-Final-Project
+  image: /media/eco_counter_poisson_coeffplot.png
+  date: "2026-03-09"
+  categories: ["Python", "Web Scraping"]
+
+- title: "Project STAR: HLM Analysis"
+  description: "Capstone project for STA 207. Statistical analysis utilizing Hierarchical Linear Models (HLM) and MANOVA to study the effects of class size on student achievement."
+  path: https://github.com/MarioArceAcosta/STA-207-Final-Report
+  image: /media/sta_207_class_density.png
+  date: "2026-03-10"
+  categories: ["Higher Education"]
+  
+- title: "US Labor & Immigration Demographics"
+  description: "An interactive web application analyzing 10 years of statistically weighted ACS Census microdata for prime-age college graduates."
+  path: https://marioarceacosta.shinyapps.io/shiny/
+  image: /media/dashboard_screenshot.png
+  date: "2026-03-30"
+  categories: ["R", "Shiny", "PostgreSQL"]
+  
