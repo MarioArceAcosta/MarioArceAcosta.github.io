@@ -13,27 +13,83 @@ Before deploying any advanced modeling, it is critical to understand the shape, 
 
 ## Loading the Data
 
-We'll start by pulling in the raw extracts.
+We'll start by pulling in t
 
 ```{r}
-#| label: load-packages
+#| label: data-prep
 #| message: false
 #| warning: false
 
-library(readr)
 library(tidyverse)
-library(ggplot2)
-library(dplyr)
-#library(janitor)
+library(DBI)
+library(RPostgres)
 
+# 1. Connect and fetch your highly granular ACS summary
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "aws-1-us-east-2.pooler.supabase.com", 
+  port = 6543,
+  user = "postgres.dpuhypyqwupzesfkiplu",
+  password = Sys.getenv("SUPABASE_PWD")
+)
+acs_raw_summary <- dbGetQuery(con, "SELECT * FROM acs_imputations_summary")
+dbDisconnect(con)
 
+# 2. Load the DHS Official CSVs
 totals <- read_csv("dhs_historical_totals.csv") %>%
-  filter(Data_Year >=2009 & Data_Year <= 2019)
-View(totals)
+  filter(Data_Year >=2009 & Data_Year <= 2019) 
+dhs_states <- read_csv("dhs_historical_state.csv") %>%
+  filter(Data_Year >=2009 & Data_Year <= 2019) 
+dhs_countries <- read_csv("dhs_historical_country.csv") %>%
+  filter(Data_Year >=2009 & Data_Year <= 2019) 
 
-# Barplot
-ggplot(totals, aes(x=Data_Year, y=Count)) + 
-  geom_bar(stat = "identity")
+# 3. Build a Crosswalk for States
+fips_map <- c(
+  "1"="Alabama", "2"="Alaska", "4"="Arizona", "5"="Arkansas", "6"="California", 
+  "8"="Colorado", "9"="Connecticut", "10"="Delaware", "11"="District of Columbia", 
+  "12"="Florida", "13"="Georgia", "15"="Hawaii", "16"="Idaho", "17"="Illinois", 
+  "18"="Indiana", "19"="Iowa", "20"="Kansas", "21"="Kentucky", "22"="Louisiana", 
+  "23"="Maine", "24"="Maryland", "25"="Massachusetts", "26"="Michigan", 
+  "27"="Minnesota", "28"="Mississippi", "29"="Missouri", "30"="Montana", 
+  "31"="Nebraska", "32"="Nevada", "33"="New Hampshire", "34"="New Jersey", 
+  "35"="New Mexico", "36"="New York", "37"="North Carolina", "38"="North Dakota", 
+  "39"="Ohio", "40"="Oklahoma", "41"="Oregon", "42"="Pennsylvania", 
+  "44"="Rhode Island", "45"="South Carolina", "46"="South Dakota", "47"="Tennessee", 
+  "48"="Texas", "49"="Utah", "50"="Vermont", "51"="Virginia", "53"="Washington", 
+  "54"="West Virginia", "55"="Wisconsin", "56"="Wyoming"
+)
+names(totals)[names(totals) == "Data_Year"] <- "year"
+names(dhs_states)[names(dhs_states) == "Data_Year"] <- "year"
+names(dhs_countries)[names(dhs_countries) == "Data_Year"] <- "year"
+names(dhs_states)[names(dhs_states) == "Category_Value"] <- "state_name"
+names(dhs_countries)[names(dhs_countries) == "Category_Value"] <- "country_name"
+
+
+# Translate the ACS state codes into text so it matches the DHS CSV
+acs_base <- acs_raw_summary %>%
+  mutate(state_name = fips_map[as.character(statefip)])
+```
+
+```{r}
+# Roll up ACS data to the National level
+macro_acs <- acs_base %>%
+  group_by(year) %>%
+  summarise(
+    total_foreign_born = sum(total_foreign_born_pop, na.rm = TRUE),
+    # Let's use your high probability model for this example
+    imputed_count = sum(high_prob_count, na.rm = TRUE) 
+  )
+
+# Join and Calculate Rates
+macro_comparison <- macro_acs %>%
+  # Assuming dhs_totals has columns: year, dhs_unauth_count
+  left_join(totals, by = "year") %>%
+  mutate(
+    imputation_rate = imputed_count / total_foreign_born,
+    dhs_rate = Count / total_foreign_born,
+    variance = imputation_rate - dhs_rate
+  )
 ```
 
 ```{r}
@@ -99,4 +155,104 @@ p_age <- ggplot(age_yearly, aes(x = as.character(year), y = total_high_recall, f
 
 # Convert to an interactive web chart
 ggplotly(p_age, tooltip = c("fill", "y", "x"))
+```
+
+```{r}
+library(tidyverse)
+
+# --- PRE-REQUISITE: ASSUMED STARTING DATA ---
+# acs_base: Your ACS data from the previous step (has year, state_name, bpld, high_prob_count)
+# dhs_states: CSV with year, state_name, dhs_count
+# dhs_countries: CSV with year, country_name, dhs_count
+
+# --- 1. COUNTRY OF ORIGIN HARMONIZATION ---
+# Create a crosswalk for the Top DHS Countries using BPLD codes
+country_map <- c(
+  "20000" = "Mexico",
+  "21010" = "El Salvador",
+  "21020" = "Guatemala",
+  "21030" = "Honduras",
+  "50100" = "India",
+  "50000" = "China",
+  "51500" = "Philippines"
+  # Add the rest of the DHS explicitly named countries here...
+)
+
+acs_mapped <- acs_base %>%
+  mutate(
+    # Translate the code to a name. If it's not in our map, label it "Other"
+    country_name = coalesce(country_map[as.character(bpld)], "Other Countries")
+  )
+
+# --- 2. STATE DISTRIBUTION COMPARISON ---
+# Calculate the percentage of the total population living in each state
+state_distribution <- acs_mapped %>%
+  # 1. Roll up ACS counts by State
+  group_by(year, state_name) %>%
+  summarise(imputed_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
+  # 2. Calculate the ACS State Percentage
+  group_by(year) %>%
+  mutate(imputed_pct = (imputed_count / sum(imputed_count)) * 100) %>%
+  ungroup() %>%
+  
+  # 3. Join with DHS States
+  left_join(dhs_states, by = c("year", "state_name")) %>%
+  
+  # 4. Calculate the DHS State Percentage & The Variance
+  group_by(year) %>%
+  mutate(
+    dhs_pct = (Count / sum(Count, na.rm = TRUE)) * 100,
+    # Positive variance means your model over-allocated to this state vs DHS
+    dist_variance = imputed_pct - dhs_pct 
+  ) %>%
+  ungroup() %>%
+  filter(!is.na(state_name))
+
+# --- 3. COUNTRY DISTRIBUTION COMPARISON ---
+# Calculate the percentage of the total population originating from each country
+country_distribution <- acs_mapped %>%
+  # 1. Roll up ACS counts by Country (including the "Other" bucket)
+  group_by(year, country_name) %>%
+  summarise(imputed_count = sum(high_prob_count, na.rm = TRUE), .groups = "drop") %>%
+  # 2. Calculate the ACS Country Percentage
+  group_by(year) %>%
+  mutate(imputed_pct = (imputed_count / sum(imputed_count)) * 100) %>%
+  ungroup() %>%
+  
+  # 3. Join with DHS Countries
+  left_join(dhs_countries, by = c("year", "country_name")) %>%
+  
+  # 4. Calculate the DHS Country Percentage & The Variance
+  group_by(year) %>%
+  mutate(
+    dhs_pct = (Count / sum(Count, na.rm = TRUE)) * 100,
+    dist_variance = imputed_pct - dhs_pct
+  ) %>%
+  ungroup()
+```
+
+```{r}
+# Example: Visualizing the State Variance for 2019
+state_variance_plot <- state_distribution %>%
+  filter(year == 2019) %>%
+  # Filter to the top 15 states by DHS volume so the chart isn't cluttered
+  slice_max(order_by = Count, n = 5) %>%
+  mutate(
+    # Create a flag for coloring: Over-estimated vs Under-estimated
+    variance_direction = ifelse(dist_variance > 0, "Over-Allocated", "Under-Allocated")
+  ) %>%
+  ggplot(aes(x = reorder(state_name, dist_variance), y = dist_variance, fill = variance_direction)) +
+  geom_col() +
+  coord_flip() + # Makes it a horizontal bar chart
+  scale_fill_manual(values = c("Over-Allocated" = "#2ca02c", "Under-Allocated" = "#d62728")) +
+  labs(
+    title = "Imputation Variance by State (2019)",
+    subtitle = "Percentage point difference from official DHS state distributions",
+    x = "",
+    y = "Variance (Percentage Points)",
+    fill = "Model Behavior vs DHS"
+  ) +
+  theme_minimal()
+
+ggplotly(state_variance_plot)
 ```

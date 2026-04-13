@@ -1,10 +1,9 @@
-Category_Value,Data_Year,Count,Category_Type
+﻿Category_Value,Data_Year,Count,Category_Type
 Mexico,2000,4680000.0,Country
 Guatemala,2000,290000.0,Country
 El Salvador,2000,430000.0,Country
 Honduras,2000,160000.0,Country
 Philippines,2000,200000.0,Country
-Venezuela,2000,,Country
 Colombia,2000,100000.0,Country
 Brazil,2000,100000.0,Country
 India,2000,120000.0,Country
@@ -15,7 +14,6 @@ Guatemala,2005,370000.0,Country
 El Salvador,2005,470000.0,Country
 Honduras,2005,180000.0,Country
 Philippines,2005,210000.0,Country
-Venezuela,2005,,Country
 Colombia,2005,110000.0,Country
 Brazil,2005,170000.0,Country
 India,2005,280000.0,Country
@@ -26,7 +24,6 @@ Guatemala,2006,430000.0,Country
 El Salvador,2006,510000.0,Country
 Honduras,2006,280000.0,Country
 Philippines,2006,280000.0,Country
-Venezuela,2006,,Country
 Colombia,2006,140000.0,Country
 Brazil,2006,210000.0,Country
 India,2006,210000.0,Country
@@ -65,17 +62,6 @@ Brazil,2009,150000.0,Country
 India,2009,200000.0,Country
 China,2009,120000.0,Country
 All others,2009,1880000.0,Country
-Mexico,2010,6640000.0,Country
-Guatemala,2010,520000.0,Country
-El Salvador,2010,620000.0,Country
-Honduras,2010,330000.0,Country
-Philippines,2010,280000.0,Country
-Venezuela,2010,30000.0,Country
-Colombia,2010,110000.0,Country
-Brazil,2010,180000.0,Country
-India,2010,200000.0,Country
-China,2010,130000.0,Country
-All others,2010,1750000.0,Country
 Mexico,2010,6830000.0,Country
 Guatemala,2010,520000.0,Country
 El Salvador,2010,670000.0,Country
@@ -131,17 +117,6 @@ Brazil,2014,110000.0,Country
 India,2014,390000.0,Country
 China,2014,230000.0,Country
 All others,2014,2090000.0,Country
-Mexico,2015,6580000.0,Country
-Guatemala,2015,620000.0,Country
-El Salvador,2015,750000.0,Country
-Honduras,2015,440000.0,Country
-Philippines,2015,370000.0,Country
-Venezuela,2015,80000.0,Country
-Colombia,2015,140000.0,Country
-Brazil,2015,100000.0,Country
-India,2015,470000.0,Country
-China,2015,320000.0,Country
-All others,2015,2110000.0,Country
 Mexico,2015,6200000.0,Country
 Guatemala,2015,600000.0,Country
 El Salvador,2015,720000.0,Country
@@ -175,17 +150,6 @@ Brazil,2017,150000.0,Country
 India,2017,490000.0,Country
 China,2017,410000.0,Country
 All others,2017,2090000.0,Country
-Mexico,2018,5420000.0,Country
-Guatemala,2018,620000.0,Country
-El Salvador,2018,730000.0,Country
-Honduras,2018,450000.0,Country
-Philippines,2018,370000.0,Country
-Venezuela,2018,190000.0,Country
-Colombia,2018,210000.0,Country
-Brazil,2018,200000.0,Country
-India,2018,540000.0,Country
-China,2018,410000.0,Country
-All others,2018,2260000.0,Country
 Mexico,2018,5540000.0,Country
 Guatemala,2018,620000.0,Country
 El Salvador,2018,730000.0,Country

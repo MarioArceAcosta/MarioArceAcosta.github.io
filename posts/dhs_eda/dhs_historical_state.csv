@@ -1,4 +1,4 @@
-Category_Value,Data_Year,Count,Category_Type
+﻿Category_Value,Data_Year,Count,Category_Type
 California,2000,2510000.0,State
 Texas,2000,1090000.0,State
 Florida,2000,800000.0,State
@@ -18,7 +18,6 @@ Illinois,2005,520000.0,State
 New York,2005,560000.0,State
 North Carolina,2005,360000.0,State
 Georgia,2005,470000.0,State
-Washington,2005,,State
 Arizona,2005,480000.0,State
 All others,2005,2750000.0,State
 California,2006,2790000.0,State
@@ -65,17 +64,6 @@ Georgia,2009,480000.0,State
 Washington,2009,230000.0,State
 Arizona,2009,460000.0,State
 All others,2009,2760000.0,State
-California,2010,2570000.0,State
-Texas,2010,1770000.0,State
-Florida,2010,760000.0,State
-New Jersey,2010,370000.0,State
-Illinois,2010,490000.0,State
-New York,2010,460000.0,State
-North Carolina,2010,390000.0,State
-Georgia,2010,460000.0,State
-Washington,2010,200000.0,State
-Arizona,2010,470000.0,State
-All others,2010,2840000.0,State
 California,2010,2910000.0,State
 Texas,2010,1780000.0,State
 Florida,2010,730000.0,State
@@ -131,17 +119,6 @@ Georgia,2014,410000.0,State
 Washington,2014,280000.0,State
 Arizona,2014,350000.0,State
 All others,2014,3190000.0,State
-California,2015,2880000.0,State
-Texas,2015,1940000.0,State
-Florida,2015,810000.0,State
-New Jersey,2015,440000.0,State
-Illinois,2015,450000.0,State
-New York,2015,590000.0,State
-North Carolina,2015,390000.0,State
-Georgia,2015,390000.0,State
-Washington,2015,270000.0,State
-Arizona,2015,380000.0,State
-All others,2015,3430000.0,State
 California,2015,2760000.0,State
 Texas,2015,1860000.0,State
 Florida,2015,540000.0,State
@@ -175,17 +152,6 @@ Georgia,2017,400000.0,State
 Washington,2017,280000.0,State
 Arizona,2017,340000.0,State
 All others,2017,3300000.0,State
-California,2018,2610000.0,State
-Texas,2018,1940000.0,State
-Florida,2018,660000.0,State
-New Jersey,2018,460000.0,State
-Illinois,2018,450000.0,State
-New York,2018,520000.0,State
-North Carolina,2018,350000.0,State
-Georgia,2018,380000.0,State
-Washington,2018,290000.0,State
-Arizona,2018,330000.0,State
-All others,2018,3390000.0,State
 California,2018,2640000.0,State
 Texas,2018,1950000.0,State
 Florida,2018,680000.0,State
