@@ -126,6 +126,69 @@
     "text": "Slides\n\n\n Download PDF"
   },
   {
+    "objectID": "msrip_symposium.html",
+    "href": "msrip_symposium.html",
+    "title": "MSRIP Symposium",
+    "section": "",
+    "text": "University of California, Riverside\n\n\n\n\n\n\nPoster: Summer research poster summarizing reseach initiative with Dr. Sovero\n\n\n\n\n\n\n\nImage of me in front of my poster\n\n\n\n\n\n\n\n\n\nImage with some peers I met through the program\n\n\n\n\n\n\n\nImage where I am presenting my research to a peer.\n\n\n\n\n\nWe used an extract from the American Community Survey (ACS) and Stata’s statistical software to examine educational mismatch rates of DACA eligible college graduates and the wage penalty they receive for their legal status."
+  },
+  {
+    "objectID": "msrip_symposium.html#mind-the-gap-msrip-ucr-summer-research-programsymposium",
+    "href": "msrip_symposium.html#mind-the-gap-msrip-ucr-summer-research-programsymposium",
+    "title": "MSRIP Symposium",
+    "section": "",
+    "text": "University of California, Riverside\n\n\n\n\n\n\nPoster: Summer research poster summarizing reseach initiative with Dr. Sovero\n\n\n\n\n\n\n\nImage of me in front of my poster\n\n\n\n\n\n\n\n\n\nImage with some peers I met through the program\n\n\n\n\n\n\n\nImage where I am presenting my research to a peer.\n\n\n\n\n\nWe used an extract from the American Community Survey (ACS) and Stata’s statistical software to examine educational mismatch rates of DACA eligible college graduates and the wage penalty they receive for their legal status."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Mario Arce Acosta",
+    "section": "",
+    "text": "Hello, nice to meet you! My name is Mario, and I am currently studying Statistics through the Master’s in Science program at the University of California, Davis. I also received my Bachelor’s in Science in Applied Mathematics/Economics and a Minor in Business Analytics from the University of California Riverside.\nMy special interests are machine learning, labor economics, and the role/experience of undocumented immigrants in the economy. I am currently conducting research on the labor market outcomes of undocumented college graduates using machine learning imputation methods.\nI am proud to say that I have presented my research (coauthored with Dr. Veronica Sovero at UC Riverside) at national conferences such as at the Population Association of America (PAA) 2025 Annual Conference and the 2025 Association for Public Policy Analysis & Management (APPAM) Conference!"
+  },
+  {
+    "objectID": "dashboard.html",
+    "href": "dashboard.html",
+    "title": "US Labor & Immigration Demographics",
+    "section": "",
+    "text": "This dashboard pulls a pre-aggregated decade of US Census microdata from a cloud PostgreSQL database to visualize macroeconomic shifts in the labor market.\n\nLive Application"
+  },
+  {
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "Data Science & Research Blog",
+    "section": "",
+    "text": "Exploratory Data Analysis of DHS Estimates\n\n\n\nR\n\nEDA\n\nData Cleaning\n\n\n\nInitial data cleaning, extraction, and analysis of Department of Homeland Security reports.\n\n\n\nMario Arce Acosta\n\n\nApr 12, 2026\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "freelance.html",
+    "href": "freelance.html",
+    "title": "Mario Alberto Arce Acosta",
+    "section": "",
+    "text": "I leverage R, Stata, and Python to solve complex causal and predictive problems for organizations.\n\nHire Me on Upwork"
+  },
+  {
+    "objectID": "freelance.html#elite-credibility",
+    "href": "freelance.html#elite-credibility",
+    "title": "Mario Alberto Arce Acosta",
+    "section": "🏆 Elite Credibility",
+    "text": "🏆 Elite Credibility\nMy coauthored research has been selected for presentation at premier national conferences:\n\n\n2025 APPAM\nAssociation for Public Policy Analysis & Management Seattle, Washington\n\n\n2025 PAA\nPopulation Association of America Washington, D.C."
+  },
+  {
+    "objectID": "freelance.html#specialized-statistical-services",
+    "href": "freelance.html#specialized-statistical-services",
+    "title": "Mario Alberto Arce Acosta",
+    "section": "📈 Specialized Statistical Services",
+    "text": "📈 Specialized Statistical Services\n\n\n\n\nCausal Inference\nMoving beyond correlation to establish true cause-and-effect relationships.\n\nDifference-in-Differences (DiD)\nInstrumental Variables (IV)\nPanel Data (Random / Fixed / Mixed Effects)\nDescriptive Regression Analysis\n\n\n\n\n\n\n\nPredictive Modeling\nLeveraging advanced algorithms to forecast trends and classify complex data points.\n\nMachine Learning (Gradient Boosted Trees, Random Forest, KNN)\nSurvey Methodology & Post-stratification Weighting\nStatistical Tests (A/B, T-tests, Chi-squared, Hausman)\n\n\n\n\n\n\n\nData Pipelines & BI\nFrom raw extraction to governed databases and automated dashboards.\n\nPostgreSQL\nPython & R\nPlotly & Looker Studio\nData Governance Implementation"
+  },
+  {
+    "objectID": "freelance.html#proven-impact-experience",
+    "href": "freelance.html#proven-impact-experience",
+    "title": "Mario Alberto Arce Acosta",
+    "section": "💼 Proven Impact & Experience",
+    "text": "💼 Proven Impact & Experience\nData Analytics Implementation & Governance Streamlined data collection and engineered a unified database for an academic technology center initiative. I managed the pipeline from raw vendor extracts to cleaning hundreds of thousands of rows in Google Sheets. Beyond the backend, I authored data governance policies, facilitated stakeholder meetings, and developed automated key-metric dashboards in Google Looker Studio to disseminate findings via bi-weekly strategy meetings.\nFeatured Analytical Projects\n\nInteractive Dashboards: Built reproducible research platforms and portfolios utilizing PostgreSQL, Python, and Quarto.\nEconomic Regression Studies: Conducted rigorous analyses on Airbnb pricing models in Mexico and evaluated H-1B sponsor rates by industry type and geographic location.\n\n\n\n\nReady to solve your data challenges?\n\n\nI am currently accepting new freelance clients. Let’s discuss your project requirements.\n\nView My Profile on Upwork"
+  },
+  {
     "objectID": "leading_model.html",
     "href": "leading_model.html",
     "title": "Leading ML Model",
@@ -168,60 +231,25 @@
     "text": "4.3 Demographic Precision-Recall Curve (GBM Library; Figure 3)\n\n\nCode\n# Total undocumented cases in test set\ntotal_undocu_gbm &lt;- sum(test_gbm_num$undocu_likely == 1)\n\n# Group 1: Top 10 states\nrecall_top_ten_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$top_ten_states == 1) / total_undocu_gbm\nprecis_top_ten_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$top_ten_states == 1) / \n                sum(test_gbm_num$top_ten_states == 1)\n\n# Group 2: Hispanic/Latino\nrecall_hispanic_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$spanish_hispanic_latino == 1) / total_undocu_gbm\nprecis_hispanic_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$spanish_hispanic_latino == 1) / \n                   sum(test_gbm_num$spanish_hispanic_latino == 1)\n\n# Group 3: Central American Latino\nrecall_central_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & \n                           test_gbm_num$central_latino ==   1) / total_undocu_gbm\nprecis_central_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & \n                           test_gbm_num$central_latino == 1) / \n                        sum(test_gbm_num$central_latino == 1)\n\n# Group 4: Asian-born\nrecall_asia_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$bpl_asia == 1) / total_undocu_gbm\nprecis_asia_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$bpl_asia == 1) / \n               sum(test_gbm_num$bpl_asia == 1)\n\n# Group 5: Non-fluent English speakers\nrecall_nonfluent_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$nonfluent == 1) / total_undocu_gbm\nprecis_nonfluent_gbm &lt;- sum(test_gbm_num$undocu_likely == 1 & test_gbm_num$nonfluent == 1) / \n                    sum(test_gbm_num$nonfluent == 1)\n\n\n# Set output file\nsetwd(figures_path)\npng(\"undocumented_demographic__gbm_pr_curve.png\", width = 2700, height = 2100, res = 300, family = \"Times\")\n# Or use: pdf(\"undocumented_demographic_pr_curve.pdf\", family=\"Times\", width=9)\n\n# Set up plot parameters\nop &lt;- par(family = \"serif\")\n\n# Main precision-recall curve\nplot(gbm_pr_data_ff$recall, gbm_pr_data_ff$precision, type = \"l\", pch = 19,\n     col = \"black\", xlab = \"Recall\", ylab = \"Precision\",\n     lwd = 3,\n     ylim = c(0, 1), xlim = c(0, 1), lty = 1, \n     cex.lab = 1.5, cex.axis = 1,\n     main = \"\")  # Add title if desired\n\n# Add demographic group points\npoints(recall_top_ten_gbm, precis_top_ten_gbm, pch = 17, col = 1, cex = 1.5)\npoints(recall_hispanic_gbm, precis_hispanic_gbm, pch = 19, col = 1, cex = 1.5)\npoints(recall_central_gbm, precis_central_gbm, pch = 19, col = \"gray\", cex = 1.5)\npoints(recall_asia_gbm, precis_asia_gbm, pch = 17, col = \"gray\", cex = 1.5)\npoints(recall_nonfluent_gbm, precis_nonfluent_gbm, pch = 15, col = \"darkgray\", cex = 1.5)\n\n\n# Demographic groups legend\nlegend(0.25, 1, \n       col = c(\"white\", 1, 1, \"gray\", \"gray\", \"darkgray\"), \n       pch = c(19, 17, 19, 19, 17, 15),\n       pt.cex = 1.5,\n       legend = c(\"Demographic Groups:\", \n                 \"Top 10 states\", \n                 \"Hispanic/Latino\",\n                 \"Central Latino\", \n                 \"Asian Born\",\n                 \"Non-fluent English\"),\n       bty = 'n', \n       cex = 1.25, \n       ncol = 1, \n       bg = \"white\")\n\n# Add random baseline\nrandom_baseline_gbm &lt;- sum(test_gbm_num$undocu_likely == 1) / nrow(test_gbm_num)\nabline(h = random_baseline_gbm, lty = 2, col = \"gray50\")\n\n# Add text label for random baseline\ntext(0.5, random_baseline_gbm + 0.05, \n     paste(\"Random Baseline:\", round(random_baseline_gbm, 3)), \n     cex = 0.9, col = \"gray30\")\n\ndev.off()\n\n\npng \n  2 \n\n\nCode\ncat(\"\\n=== DEMOGRAPHIC GROUP PERFORMANCE ===\\n\")\n\n\n\n=== DEMOGRAPHIC GROUP PERFORMANCE ===\n\n\nCode\ncat(\"Random Baseline Precision:\", round(random_baseline_gbm, 4), \"\\n\\n\")\n\n\nRandom Baseline Precision: 0.3037 \n\n\nCode\nsummary_df_gbm &lt;- data.frame(\n  Group = c(\"Top 10 states\", \"Hispanic/Latino\", \"Central Latino\", \n            \"Asian Born\", \"Non-fluent English\"),\n  Recall = c(recall_top_ten_gbm, recall_hispanic_gbm, recall_central_gbm, \n            recall_asia_gbm, recall_nonfluent_gbm),\n  Precision = c(precis_top_ten_gbm, precis_hispanic_gbm, precis_central_gbm, \n               precis_asia_gbm, precis_nonfluent_gbm)\n)\n\nprint(summary_df_gbm)\n\n\n               Group    Recall Precision\n1      Top 10 states 0.0000000       NaN\n2    Hispanic/Latino 0.6371882 0.3881215\n3     Central Latino 0.6167800 0.4047619\n4         Asian Born 0.1201814 0.1766667\n5 Non-fluent English 0.4693878 0.3670213\n\n\nCode\n# Save as both PDF and PNG\ncreate_demographic_plot_gbm &lt;- function(filename_base) {\n  # Function to create the plot (reusable)\n  make_plot &lt;- function() {\n    par(family = \"serif\")\n    plot(gbm_pr_data_ff$recall, gbm_pr_data_ff$precision, type = \"l\", pch = 19,\n         col = \"black\", xlab = \"Recall\", ylab = \"Precision\",\n         lwd = 3, ylim = c(0, 1), xlim = c(0, 1), lty = 1, \n         cex.lab = 1.5, cex.axis = 1)\n    \n    points(recall_top_ten, precis_top_ten, pch = 17, col = 1, cex = 1.5)\n    points(recall_hispanic, precis_hispanic, pch = 19, col = 1, cex = 1.5)\n    points(recall_central, precis_central, pch = 19, col = \"gray\", cex = 1.5)\n    points(recall_asia, precis_asia, pch = 17, col = \"gray\", cex = 1.5)\n    \n    legend(0.63, 1, col = c(\"white\", 1), lwd = 2, lty = c(0, 1),\n           legend = c(\"Learning Method:\", \"Boosted Trees\"),\n           bty = 'n', cex = 1.25, ncol = 1)\n    \n    legend(0.30, 1, col = c(\"white\", 1, 1, \"gray\", \"gray\"), \n           pch = c(19, 17, 19, 19, 17), pt.cex = 1.5,\n           legend = c(\"Groups:\", \"Top 10 states\", \"Hispanic/Latino\",\n                     \"Central Latino\", \"Asian Born\"),\n           bty = 'n', cex = 1.25, ncol = 1, bg = \"white\")\n    \n    abline(h = random_baseline_gbm, lty = 2, col = \"gray50\")\n  }\n  \n  # Save as PDF\n  pdf(paste0(filename_base, \".pdf\"), family = \"Times\", width = 9)\n  make_plot()\n  dev.off()\n  \n  # Save as PNG\n  png(paste0(filename_base, \".png\"), width = 2700, height = 2100, res = 300, family = \"Times\")\n  make_plot()\n  dev.off()\n}"
   },
   {
-    "objectID": "freelance.html",
-    "href": "freelance.html",
-    "title": "Mario Alberto Arce Acosta",
+    "objectID": "posts/dhs_eda/index.html",
+    "href": "posts/dhs_eda/index.html",
+    "title": "Exploratory Data Analysis of DHS Estimates",
     "section": "",
-    "text": "I leverage R, Stata, and Python to solve complex causal and predictive problems for organizations.\n\nHire Me on Upwork"
+    "text": "Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data."
   },
   {
-    "objectID": "freelance.html#elite-credibility",
-    "href": "freelance.html#elite-credibility",
-    "title": "Mario Alberto Arce Acosta",
-    "section": "🏆 Elite Credibility",
-    "text": "🏆 Elite Credibility\nMy coauthored research has been selected for presentation at premier national conferences:\n\n\n2025 APPAM\nAssociation for Public Policy Analysis & Management Seattle, Washington\n\n\n2025 PAA\nPopulation Association of America Washington, D.C."
-  },
-  {
-    "objectID": "freelance.html#specialized-statistical-services",
-    "href": "freelance.html#specialized-statistical-services",
-    "title": "Mario Alberto Arce Acosta",
-    "section": "📈 Specialized Statistical Services",
-    "text": "📈 Specialized Statistical Services\n\n\n\n\nCausal Inference\nMoving beyond correlation to establish true cause-and-effect relationships.\n\nDifference-in-Differences (DiD)\nInstrumental Variables (IV)\nPanel Data (Random / Fixed / Mixed Effects)\nDescriptive Regression Analysis\n\n\n\n\n\n\n\nPredictive Modeling\nLeveraging advanced algorithms to forecast trends and classify complex data points.\n\nMachine Learning (Gradient Boosted Trees, Random Forest, KNN)\nSurvey Methodology & Post-stratification Weighting\nStatistical Tests (A/B, T-tests, Chi-squared, Hausman)\n\n\n\n\n\n\n\nData Pipelines & BI\nFrom raw extraction to governed databases and automated dashboards.\n\nPostgreSQL\nPython & R\nPlotly & Looker Studio\nData Governance Implementation"
-  },
-  {
-    "objectID": "freelance.html#proven-impact-experience",
-    "href": "freelance.html#proven-impact-experience",
-    "title": "Mario Alberto Arce Acosta",
-    "section": "💼 Proven Impact & Experience",
-    "text": "💼 Proven Impact & Experience\nData Analytics Implementation & Governance Streamlined data collection and engineered a unified database for an academic technology center initiative. I managed the pipeline from raw vendor extracts to cleaning hundreds of thousands of rows in Google Sheets. Beyond the backend, I authored data governance policies, facilitated stakeholder meetings, and developed automated key-metric dashboards in Google Looker Studio to disseminate findings via bi-weekly strategy meetings.\nFeatured Analytical Projects\n\nInteractive Dashboards: Built reproducible research platforms and portfolios utilizing PostgreSQL, Python, and Quarto.\nEconomic Regression Studies: Conducted rigorous analyses on Airbnb pricing models in Mexico and evaluated H-1B sponsor rates by industry type and geographic location.\n\n\n\n\nReady to solve your data challenges?\n\n\nI am currently accepting new freelance clients. Let’s discuss your project requirements.\n\nView My Profile on Upwork"
-  },
-  {
-    "objectID": "dashboard.html",
-    "href": "dashboard.html",
-    "title": "US Labor & Immigration Demographics",
+    "objectID": "posts/dhs_eda/index.html#the-objective",
+    "href": "posts/dhs_eda/index.html#the-objective",
+    "title": "Exploratory Data Analysis of DHS Estimates",
     "section": "",
-    "text": "This dashboard pulls a pre-aggregated decade of US Census microdata from a cloud PostgreSQL database to visualize macroeconomic shifts in the labor market.\n\nLive Application"
+    "text": "Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Mario Arce Acosta",
-    "section": "",
-    "text": "Hello, nice to meet you! My name is Mario, and I am currently studying Statistics through the Master’s in Science program at the University of California, Davis. I also received my Bachelor’s in Science in Applied Mathematics/Economics and a Minor in Business Analytics from the University of California Riverside.\nMy special interests are machine learning, labor economics, and the role/experience of undocumented immigrants in the economy. I am currently conducting research on the labor market outcomes of undocumented college graduates using machine learning imputation methods.\nI am proud to say that I have presented my research (coauthored with Dr. Veronica Sovero at UC Riverside) at national conferences such as at the Population Association of America (PAA) 2025 Annual Conference and the 2025 Association for Public Policy Analysis & Management (APPAM) Conference!"
-  },
-  {
-    "objectID": "msrip_symposium.html",
-    "href": "msrip_symposium.html",
-    "title": "MSRIP Symposium",
-    "section": "",
-    "text": "University of California, Riverside\n\n\n\n\n\n\nPoster: Summer research poster summarizing reseach initiative with Dr. Sovero\n\n\n\n\n\n\n\nImage of me in front of my poster\n\n\n\n\n\n\n\n\n\nImage with some peers I met through the program\n\n\n\n\n\n\n\nImage where I am presenting my research to a peer.\n\n\n\n\n\nWe used an extract from the American Community Survey (ACS) and Stata’s statistical software to examine educational mismatch rates of DACA eligible college graduates and the wage penalty they receive for their legal status."
-  },
-  {
-    "objectID": "msrip_symposium.html#mind-the-gap-msrip-ucr-summer-research-programsymposium",
-    "href": "msrip_symposium.html#mind-the-gap-msrip-ucr-summer-research-programsymposium",
-    "title": "MSRIP Symposium",
-    "section": "",
-    "text": "University of California, Riverside\n\n\n\n\n\n\nPoster: Summer research poster summarizing reseach initiative with Dr. Sovero\n\n\n\n\n\n\n\nImage of me in front of my poster\n\n\n\n\n\n\n\n\n\nImage with some peers I met through the program\n\n\n\n\n\n\n\nImage where I am presenting my research to a peer.\n\n\n\n\n\nWe used an extract from the American Community Survey (ACS) and Stata’s statistical software to examine educational mismatch rates of DACA eligible college graduates and the wage penalty they receive for their legal status."
+    "objectID": "posts/dhs_eda/index.html#loading-the-data",
+    "href": "posts/dhs_eda/index.html#loading-the-data",
+    "title": "Exploratory Data Analysis of DHS Estimates",
+    "section": "Loading the Data",
+    "text": "Loading the Data\nWe’ll start by pulling in the raw extracts.\n\nlibrary(readr)\nlibrary(tidyverse)\nlibrary(ggplot2)\nlibrary(dplyr)\n#library(janitor)\n\n\ntotals &lt;- read_csv(\"dhs_historical_totals.csv\") %&gt;%\n  filter(Data_Year &gt;=2009 & Data_Year &lt;= 2019)\nView(totals)\n\n# Barplot\nggplot(totals, aes(x=Data_Year, y=Count)) + \n  geom_bar(stat = \"identity\")\n\n\n\n\n\n\n\n\n\nlibrary(tidyverse)\nlibrary(DBI)\nlibrary(RPostgres)\nlibrary(plotly)\n\n# --- 1. FETCH THE DATA ---\ncon &lt;- dbConnect(\n  RPostgres::Postgres(),\n  dbname = \"postgres\",\n  host = \"aws-1-us-east-2.pooler.supabase.com\", \n  port = 6543,\n  user = \"postgres.dpuhypyqwupzesfkiplu\",\n  password = Sys.getenv(\"SUPABASE_PWD\")\n)\n\nacs_summary &lt;- dbGetQuery(con, \"SELECT * FROM acs_imputations_summary\")\ndbDisconnect(con)\n\n# --- 2. PLOT 1: THE OVERALL TOTAL ---\n# Roll up the data ignoring all demographic categories\ntotal_yearly &lt;- acs_summary %&gt;%\n  group_by(year) %&gt;%\n  summarise(total_high_recall = sum(high_recall_count, na.rm = TRUE), .groups = 'drop')\n\n# Build the plot using ggplot2\np_total &lt;- ggplot(total_yearly, aes(x = as.character(year), y = total_high_recall)) +\n  geom_col(fill = \"#2E86C1\") +\n  labs(\n    title = \"Total Imputed DHS Records by Year\",\n    x = \"Year\",\n    y = \"Total Imputations\"\n  ) +\n  theme_minimal()\n\n# Convert to an interactive web chart\nggplotly(p_total, tooltip = c(\"y\", \"x\"))\n\n\n\n\n# --- 3. PLOT 2: THE DEMOGRAPHIC BREAKDOWN ---\nage_yearly &lt;- acs_summary %&gt;%\n  group_by(year, age_bracket) %&gt;%\n  summarise(total_high_recall = sum(high_recall_count, na.rm = TRUE), .groups = 'drop')\n\n# Build a grouped bar chart\np_age &lt;- ggplot(age_yearly, aes(x = as.character(year), y = total_high_recall, fill = age_bracket)) +\n  # position = \"dodge\" puts the bars side-by-side instead of stacking them\n  geom_col(position = \"dodge\", alpha = 0.9) + \n  scale_fill_viridis_d(option = \"mako\") + # Adds a professional color palette\n  labs(\n    title = \"Imputed Records by Year and Age Bracket\",\n    x = \"Year\",\n    y = \"Total Imputations\",\n    fill = \"Age Bracket\"\n  ) +\n  theme_minimal()\n\n# Convert to an interactive web chart\nggplotly(p_age, tooltip = c(\"fill\", \"y\", \"x\"))"
   },
   {
     "objectID": "projects.html",

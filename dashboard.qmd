@@ -2,7 +2,7 @@
 title: "US Labor & Immigration Demographics"
 description: "An interactive web application analyzing 11 years of statistically weighted ACS Census microdata for prime-age college graduates."
 date: "2026-03-30"
-image: "dashboard_thumbnail.png" 
+image: /media/dashboard_screenshot.png
 categories: ["R", "Shiny", "PostgreSQL", "Data Engineering"]
 ---
 
@@ -10,4 +10,6 @@ This dashboard pulls a pre-aggregated decade of US Census microdata from a cloud
 
 ### Live Application
 
-<iframe src="https://marioarceacosta.shinyapps.io/shiny/" width="100%" height="850px" style="border:none; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></iframe>
+<iframe src="https://marioarceacosta.shinyapps.io/shiny/" width="100%" height="850px" style="border:none; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+
+</iframe>

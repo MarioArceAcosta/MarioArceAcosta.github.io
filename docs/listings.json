@@ -1,5 +1,11 @@
 [
   {
+    "listing": "/blog.html",
+    "items": [
+      "/posts/dhs_eda/index.html"
+    ]
+  },
+  {
     "listing": "/projects.html",
     "items": [
       "/presentations.html",

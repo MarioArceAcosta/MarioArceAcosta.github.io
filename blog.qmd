@@ -1,0 +1,13 @@
+---
+title: "Data Science & Research Blog"
+listing:
+  contents: posts          # Tells Quarto to look in a folder named "posts"
+  sort: "date desc"
+  type: grid
+  categories: true
+  sort-ui: false
+  filter-ui: false
+page-layout: full
+title-block-banner: true
+---
+

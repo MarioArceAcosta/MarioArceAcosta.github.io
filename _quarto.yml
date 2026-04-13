@@ -20,6 +20,9 @@ website:
         - href: stata_analysis.qmd
           text: Regression Analysis
           
+      - href: blog.qmd
+        text: Blog    
+          
       - text: "Other Work"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
         - href: projects.qmd

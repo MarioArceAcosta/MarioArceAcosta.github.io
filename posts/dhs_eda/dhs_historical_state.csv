@@ -1,0 +1,232 @@
+Category_Value,Data_Year,Count,Category_Type
+California,2000,2510000.0,State
+Texas,2000,1090000.0,State
+Florida,2000,800000.0,State
+New Jersey,2000,350000.0,State
+Illinois,2000,440000.0,State
+New York,2000,540000.0,State
+North Carolina,2000,260000.0,State
+Georgia,2000,220000.0,State
+Washington,2000,170000.0,State
+Arizona,2000,330000.0,State
+All others,2000,1750000.0,State
+California,2005,2770000.0,State
+Texas,2005,1360000.0,State
+Florida,2005,850000.0,State
+New Jersey,2005,380000.0,State
+Illinois,2005,520000.0,State
+New York,2005,560000.0,State
+North Carolina,2005,360000.0,State
+Georgia,2005,470000.0,State
+Washington,2005,,State
+Arizona,2005,480000.0,State
+All others,2005,2750000.0,State
+California,2006,2790000.0,State
+Texas,2006,1620000.0,State
+Florida,2006,960000.0,State
+New Jersey,2006,420000.0,State
+Illinois,2006,530000.0,State
+New York,2006,510000.0,State
+North Carolina,2006,360000.0,State
+Georgia,2006,490000.0,State
+Washington,2006,280000.0,State
+Arizona,2006,490000.0,State
+All others,2006,2860000.0,State
+California,2007,2840000.0,State
+Texas,2007,1710000.0,State
+Florida,2007,960000.0,State
+New Jersey,2007,470000.0,State
+Illinois,2007,560000.0,State
+New York,2007,640000.0,State
+North Carolina,2007,380000.0,State
+Georgia,2007,490000.0,State
+Washington,2007,260000.0,State
+Arizona,2007,530000.0,State
+All others,2007,2940000.0,State
+California,2008,2850000.0,State
+Texas,2008,1680000.0,State
+Florida,2008,840000.0,State
+New Jersey,2008,400000.0,State
+Illinois,2008,550000.0,State
+New York,2008,640000.0,State
+North Carolina,2008,380000.0,State
+Georgia,2008,460000.0,State
+Washington,2008,260000.0,State
+Arizona,2008,560000.0,State
+All others,2008,2980000.0,State
+California,2009,2600000.0,State
+Texas,2009,1680000.0,State
+Florida,2009,720000.0,State
+New Jersey,2009,360000.0,State
+Illinois,2009,540000.0,State
+New York,2009,550000.0,State
+North Carolina,2009,370000.0,State
+Georgia,2009,480000.0,State
+Washington,2009,230000.0,State
+Arizona,2009,460000.0,State
+All others,2009,2760000.0,State
+California,2010,2570000.0,State
+Texas,2010,1770000.0,State
+Florida,2010,760000.0,State
+New Jersey,2010,370000.0,State
+Illinois,2010,490000.0,State
+New York,2010,460000.0,State
+North Carolina,2010,390000.0,State
+Georgia,2010,460000.0,State
+Washington,2010,200000.0,State
+Arizona,2010,470000.0,State
+All others,2010,2840000.0,State
+California,2010,2910000.0,State
+Texas,2010,1780000.0,State
+Florida,2010,730000.0,State
+New Jersey,2010,440000.0,State
+Illinois,2010,550000.0,State
+New York,2010,690000.0,State
+North Carolina,2010,390000.0,State
+Georgia,2010,430000.0,State
+Washington,2010,260000.0,State
+Arizona,2010,350000.0,State
+All others,2010,3040000.0,State
+California,2011,2830000.0,State
+Texas,2011,1790000.0,State
+Florida,2011,740000.0,State
+New Jersey,2011,420000.0,State
+Illinois,2011,550000.0,State
+New York,2011,630000.0,State
+North Carolina,2011,400000.0,State
+Georgia,2011,440000.0,State
+Washington,2011,260000.0,State
+Arizona,2011,360000.0,State
+All others,2011,3100000.0,State
+California,2012,2820000.0,State
+Texas,2012,1830000.0,State
+Florida,2012,730000.0,State
+New Jersey,2012,430000.0,State
+Illinois,2012,540000.0,State
+New York,2012,580000.0,State
+North Carolina,2012,360000.0,State
+Georgia,2012,400000.0,State
+Washington,2012,270000.0,State
+Arizona,2012,350000.0,State
+All others,2012,3110000.0,State
+California,2013,2780000.0,State
+Texas,2013,1750000.0,State
+Florida,2013,740000.0,State
+New Jersey,2013,410000.0,State
+Illinois,2013,520000.0,State
+New York,2013,610000.0,State
+North Carolina,2013,400000.0,State
+Georgia,2013,390000.0,State
+Washington,2013,240000.0,State
+Arizona,2013,350000.0,State
+All others,2013,3010000.0,State
+California,2014,2730000.0,State
+Texas,2014,1850000.0,State
+Florida,2014,710000.0,State
+New Jersey,2014,450000.0,State
+Illinois,2014,530000.0,State
+New York,2014,570000.0,State
+North Carolina,2014,390000.0,State
+Georgia,2014,410000.0,State
+Washington,2014,280000.0,State
+Arizona,2014,350000.0,State
+All others,2014,3190000.0,State
+California,2015,2880000.0,State
+Texas,2015,1940000.0,State
+Florida,2015,810000.0,State
+New Jersey,2015,440000.0,State
+Illinois,2015,450000.0,State
+New York,2015,590000.0,State
+North Carolina,2015,390000.0,State
+Georgia,2015,390000.0,State
+Washington,2015,270000.0,State
+Arizona,2015,380000.0,State
+All others,2015,3430000.0,State
+California,2015,2760000.0,State
+Texas,2015,1860000.0,State
+Florida,2015,540000.0,State
+New Jersey,2015,420000.0,State
+Illinois,2015,440000.0,State
+New York,2015,630000.0,State
+North Carolina,2015,370000.0,State
+Georgia,2015,370000.0,State
+Washington,2015,260000.0,State
+Arizona,2015,360000.0,State
+All others,2015,3420000.0,State
+California,2016,2860000.0,State
+Texas,2016,1910000.0,State
+Florida,2016,610000.0,State
+New Jersey,2016,420000.0,State
+Illinois,2016,520000.0,State
+New York,2016,630000.0,State
+North Carolina,2016,360000.0,State
+Georgia,2016,400000.0,State
+Washington,2016,280000.0,State
+Arizona,2016,330000.0,State
+All others,2016,3430000.0,State
+California,2017,2790000.0,State
+Texas,2017,1870000.0,State
+Florida,2017,610000.0,State
+New Jersey,2017,450000.0,State
+Illinois,2017,440000.0,State
+New York,2017,620000.0,State
+North Carolina,2017,320000.0,State
+Georgia,2017,400000.0,State
+Washington,2017,280000.0,State
+Arizona,2017,340000.0,State
+All others,2017,3300000.0,State
+California,2018,2610000.0,State
+Texas,2018,1940000.0,State
+Florida,2018,660000.0,State
+New Jersey,2018,460000.0,State
+Illinois,2018,450000.0,State
+New York,2018,520000.0,State
+North Carolina,2018,350000.0,State
+Georgia,2018,380000.0,State
+Washington,2018,290000.0,State
+Arizona,2018,330000.0,State
+All others,2018,3390000.0,State
+California,2018,2640000.0,State
+Texas,2018,1950000.0,State
+Florida,2018,680000.0,State
+New Jersey,2018,460000.0,State
+Illinois,2018,460000.0,State
+New York,2018,600000.0,State
+North Carolina,2018,360000.0,State
+Georgia,2018,390000.0,State
+Washington,2018,310000.0,State
+Arizona,2018,340000.0,State
+All others,2018,3380000.0,State
+California,2019,2620000.0,State
+Texas,2019,1950000.0,State
+Florida,2019,650000.0,State
+New Jersey,2019,390000.0,State
+Illinois,2019,440000.0,State
+New York,2019,510000.0,State
+North Carolina,2019,340000.0,State
+Georgia,2019,360000.0,State
+Washington,2019,330000.0,State
+Arizona,2019,330000.0,State
+All others,2019,3200000.0,State
+California,2020,2410000.0,State
+Texas,2020,1900000.0,State
+Florida,2020,610000.0,State
+New Jersey,2020,400000.0,State
+Illinois,2020,370000.0,State
+New York,2020,370000.0,State
+North Carolina,2020,360000.0,State
+Georgia,2020,360000.0,State
+Washington,2020,340000.0,State
+Arizona,2020,340000.0,State
+All others,2020,3040000.0,State
+California,2022,2600000.0,State
+Texas,2022,2060000.0,State
+Florida,2022,590000.0,State
+New Jersey,2022,490000.0,State
+Illinois,2022,420000.0,State
+New York,2022,410000.0,State
+North Carolina,2022,360000.0,State
+Georgia,2022,340000.0,State
+Washington,2022,340000.0,State
+Arizona,2022,290000.0,State
+All others,2022,3090000.0,State

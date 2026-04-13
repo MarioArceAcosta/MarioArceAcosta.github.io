@@ -1,0 +1,102 @@
+---
+title: "Exploratory Data Analysis of DHS Estimates"
+description: "Initial data cleaning, extraction, and analysis of Department of Homeland Security reports."
+author: "Mario Arce Acosta"
+date: "2026-04-12"
+categories: [R, EDA, Data Cleaning]
+#image: "dhs_thumbnail.jpg" # Save an image in the same folder to show on the blog grid
+---
+
+## The Objective
+
+Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data.
+
+## Loading the Data
+
+We'll start by pulling in the raw extracts.
+
+```{r}
+#| label: load-packages
+#| message: false
+#| warning: false
+
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+#library(janitor)
+
+
+totals <- read_csv("dhs_historical_totals.csv") %>%
+  filter(Data_Year >=2009 & Data_Year <= 2019)
+View(totals)
+
+# Barplot
+ggplot(totals, aes(x=Data_Year, y=Count)) + 
+  geom_bar(stat = "identity")
+```
+
+```{r}
+#| label: dhs-barplots
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(DBI)
+library(RPostgres)
+library(plotly)
+
+# --- 1. FETCH THE DATA ---
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "aws-1-us-east-2.pooler.supabase.com", 
+  port = 6543,
+  user = "postgres.dpuhypyqwupzesfkiplu",
+  password = Sys.getenv("SUPABASE_PWD")
+)
+
+acs_summary <- dbGetQuery(con, "SELECT * FROM acs_imputations_summary")
+dbDisconnect(con)
+
+# --- 2. PLOT 1: THE OVERALL TOTAL ---
+# Roll up the data ignoring all demographic categories
+total_yearly <- acs_summary %>%
+  group_by(year) %>%
+  summarise(total_high_recall = sum(high_recall_count, na.rm = TRUE), .groups = 'drop')
+
+# Build the plot using ggplot2
+p_total <- ggplot(total_yearly, aes(x = as.character(year), y = total_high_recall)) +
+  geom_col(fill = "#2E86C1") +
+  labs(
+    title = "Total Imputed DHS Records by Year",
+    x = "Year",
+    y = "Total Imputations"
+  ) +
+  theme_minimal()
+
+# Convert to an interactive web chart
+ggplotly(p_total, tooltip = c("y", "x"))
+
+
+# --- 3. PLOT 2: THE DEMOGRAPHIC BREAKDOWN ---
+age_yearly <- acs_summary %>%
+  group_by(year, age_bracket) %>%
+  summarise(total_high_recall = sum(high_recall_count, na.rm = TRUE), .groups = 'drop')
+
+# Build a grouped bar chart
+p_age <- ggplot(age_yearly, aes(x = as.character(year), y = total_high_recall, fill = age_bracket)) +
+  # position = "dodge" puts the bars side-by-side instead of stacking them
+  geom_col(position = "dodge", alpha = 0.9) + 
+  scale_fill_viridis_d(option = "mako") + # Adds a professional color palette
+  labs(
+    title = "Imputed Records by Year and Age Bracket",
+    x = "Year",
+    y = "Total Imputations",
+    fill = "Age Bracket"
+  ) +
+  theme_minimal()
+
+# Convert to an interactive web chart
+ggplotly(p_age, tooltip = c("fill", "y", "x"))
+```
