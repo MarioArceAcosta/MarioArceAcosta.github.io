@@ -33,7 +33,7 @@ con <- dbConnect(
   user = "postgres.dpuhypyqwupzesfkiplu",
   password = Sys.getenv("SUPABASE_PWD")
 )
-acs_raw_summary <- dbGetQuery(con, "SELECT * FROM acs_imputations_summary")
+acs_raw_summary <- dbGetQuery(con, "SELECT * FROM acs_foreign_summary")
 dbDisconnect(con)
 
 # 2. Load the DHS Official CSVs
@@ -42,6 +42,8 @@ totals <- read_csv("dhs_historical_totals.csv") %>%
 dhs_states <- read_csv("dhs_historical_state.csv") %>%
   filter(Data_Year >=2009 & Data_Year <= 2019) 
 dhs_countries <- read_csv("dhs_historical_country.csv") %>%
+  filter(Data_Year >=2009 & Data_Year <= 2019) 
+dhs_age <- read_csv("dhs_unauthorized_immigrants_age.csv") %>%
   filter(Data_Year >=2009 & Data_Year <= 2019) 
 
 # 3. Build a Crosswalk for States
@@ -64,6 +66,7 @@ names(dhs_states)[names(dhs_states) == "Data_Year"] <- "year"
 names(dhs_countries)[names(dhs_countries) == "Data_Year"] <- "year"
 names(dhs_states)[names(dhs_states) == "Category_Value"] <- "state_name"
 names(dhs_countries)[names(dhs_countries) == "Category_Value"] <- "country_name"
+names(dhs_age)[names(dhs_age) == "Category_Value"] <- "age_bracket"
 
 
 # Translate the ACS state codes into text so it matches the DHS CSV
@@ -92,167 +95,109 @@ macro_comparison <- macro_acs %>%
   )
 ```
 
+## Age Composition
+
+To assess whether our machine-learning imputations of undocumented status aligned with the estimates provided by DHS (both derived from the ACS to begin with), we examine the age composition of the undocumented population over the years 2009-2019. We can then compare how closely, or how far, the age composition of our machine-learning undocumented population estimates follow the age composition reported by DHS.
+
 ```{r}
-#| label: dhs-barplots
+#| label: age-bracket-comparison-interactive
+#| fig-width: 8
+#| fig-height: 5
 #| message: false
 #| warning: false
 
 library(tidyverse)
-library(DBI)
-library(RPostgres)
-library(plotly)
+library(scales) 
+library(plotly) 
 
-# --- 1. FETCH THE DATA ---
-con <- dbConnect(
-  RPostgres::Postgres(),
-  dbname = "postgres",
-  host = "aws-1-us-east-2.pooler.supabase.com", 
-  port = 6543,
-  user = "postgres.dpuhypyqwupzesfkiplu",
-  password = Sys.getenv("SUPABASE_PWD")
-)
-
-acs_summary <- dbGetQuery(con, "SELECT * FROM acs_imputations_summary")
-dbDisconnect(con)
-
-# --- 2. PLOT 1: THE OVERALL TOTAL ---
-# Roll up the data ignoring all demographic categories
-total_yearly <- acs_summary %>%
-  group_by(year) %>%
-  summarise(total_high_recall = sum(high_recall_count, na.rm = TRUE), .groups = 'drop')
-
-# Build the plot using ggplot2
-p_total <- ggplot(total_yearly, aes(x = as.character(year), y = total_high_recall)) +
-  geom_col(fill = "#2E86C1") +
-  labs(
-    title = "Total Imputed DHS Records by Year",
-    x = "Year",
-    y = "Total Imputations"
-  ) +
-  theme_minimal()
-
-# Convert to an interactive web chart
-ggplotly(p_total, tooltip = c("y", "x"))
-
-
-# --- 3. PLOT 2: THE DEMOGRAPHIC BREAKDOWN ---
-age_yearly <- acs_summary %>%
-  group_by(year, age_bracket) %>%
-  summarise(total_high_recall = sum(high_recall_count, na.rm = TRUE), .groups = 'drop')
-
-# Build a grouped bar chart
-p_age <- ggplot(age_yearly, aes(x = as.character(year), y = total_high_recall, fill = age_bracket)) +
-  # position = "dodge" puts the bars side-by-side instead of stacking them
-  geom_col(position = "dodge", alpha = 0.9) + 
-  scale_fill_viridis_d(option = "mako") + # Adds a professional color palette
-  labs(
-    title = "Imputed Records by Year and Age Bracket",
-    x = "Year",
-    y = "Total Imputations",
-    fill = "Age Bracket"
-  ) +
-  theme_minimal()
-
-# Convert to an interactive web chart
-ggplotly(p_age, tooltip = c("fill", "y", "x"))
-```
-
-```{r}
-library(tidyverse)
-
-# --- PRE-REQUISITE: ASSUMED STARTING DATA ---
-# acs_base: Your ACS data from the previous step (has year, state_name, bpld, high_prob_count)
-# dhs_states: CSV with year, state_name, dhs_count
-# dhs_countries: CSV with year, country_name, dhs_count
-
-# --- 1. COUNTRY OF ORIGIN HARMONIZATION ---
-# Create a crosswalk for the Top DHS Countries using BPLD codes
-country_map <- c(
-  "20000" = "Mexico",
-  "21010" = "El Salvador",
-  "21020" = "Guatemala",
-  "21030" = "Honduras",
-  "50100" = "India",
-  "50000" = "China",
-  "51500" = "Philippines"
-  # Add the rest of the DHS explicitly named countries here...
-)
-
-acs_mapped <- acs_base %>%
+# --- 1. CLEAN DHS STRINGS FIRST ---
+dhs_age_clean <- dhs_age %>%
   mutate(
-    # Translate the code to a name. If it's not in our map, label it "Other"
-    country_name = coalesce(country_map[as.character(bpld)], "Other Countries")
+    age_bracket = str_replace_all(age_bracket, '=|"', '')
   )
 
-# --- 2. STATE DISTRIBUTION COMPARISON ---
-# Calculate the percentage of the total population living in each state
-state_distribution <- acs_mapped %>%
-  # 1. Roll up ACS counts by State
-  group_by(year, state_name) %>%
+# --- 2. PREP YOUR IMPUTED DATA (All Years) ---
+imputed_bracket_dist <- acs_base %>%
+  filter(age_bracket != "Under 18") %>% 
+  group_by(year, age_bracket) %>%
   summarise(imputed_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
-  # 2. Calculate the ACS State Percentage
-  group_by(year) %>%
-  mutate(imputed_pct = (imputed_count / sum(imputed_count)) * 100) %>%
-  ungroup() %>%
-  
-  # 3. Join with DHS States
-  left_join(dhs_states, by = c("year", "state_name")) %>%
-  
-  # 4. Calculate the DHS State Percentage & The Variance
-  group_by(year) %>%
+  group_by(year) %>% 
   mutate(
-    dhs_pct = (Count / sum(Count, na.rm = TRUE)) * 100,
-    # Positive variance means your model over-allocated to this state vs DHS
-    dist_variance = imputed_pct - dhs_pct 
+    fraction = imputed_count / sum(imputed_count),
+    dataset = "My Imputed ACS" 
   ) %>%
   ungroup() %>%
-  filter(!is.na(state_name))
+  select(year, age_bracket, fraction, dataset)
 
-# --- 3. COUNTRY DISTRIBUTION COMPARISON ---
-# Calculate the percentage of the total population originating from each country
-country_distribution <- acs_mapped %>%
-  # 1. Roll up ACS counts by Country (including the "Other" bucket)
-  group_by(year, country_name) %>%
-  summarise(imputed_count = sum(high_prob_count, na.rm = TRUE), .groups = "drop") %>%
-  # 2. Calculate the ACS Country Percentage
-  group_by(year) %>%
-  mutate(imputed_pct = (imputed_count / sum(imputed_count)) * 100) %>%
-  ungroup() %>%
-  
-  # 3. Join with DHS Countries
-  left_join(dhs_countries, by = c("year", "country_name")) %>%
-  
-  # 4. Calculate the DHS Country Percentage & The Variance
-  group_by(year) %>%
-  mutate(
-    dhs_pct = (Count / sum(Count, na.rm = TRUE)) * 100,
-    dist_variance = imputed_pct - dhs_pct
-  ) %>%
-  ungroup()
-```
+# --- 3. PREP YOUR BENCHMARK DATA (All Years) ---
+dhs_age_benchmark <- dhs_age_clean %>%
+   filter(age_bracket != "Under 18") %>%
+   group_by(Data_Year, age_bracket) %>%
+   summarise(bench_count = sum(Count, na.rm = TRUE), .groups = "drop") %>%
+   group_by(Data_Year) %>% 
+   mutate(
+     fraction = bench_count / sum(bench_count),
+     dataset = "DHS Official"
+   ) %>%
+   ungroup() %>%
+   rename(year = Data_Year) %>% 
+   select(year, age_bracket, fraction, dataset)
 
-```{r}
-# Example: Visualizing the State Variance for 2019
-state_variance_plot <- state_distribution %>%
-  filter(year == 2019) %>%
-  # Filter to the top 15 states by DHS volume so the chart isn't cluttered
-  slice_max(order_by = Count, n = 5) %>%
+# Combine both datasets for plotting 
+plot_data <- bind_rows(imputed_bracket_dist, dhs_age_benchmark) %>%
   mutate(
-    # Create a flag for coloring: Over-estimated vs Under-estimated
-    variance_direction = ifelse(dist_variance > 0, "Over-Allocated", "Under-Allocated")
-  ) %>%
-  ggplot(aes(x = reorder(state_name, dist_variance), y = dist_variance, fill = variance_direction)) +
-  geom_col() +
-  coord_flip() + # Makes it a horizontal bar chart
-  scale_fill_manual(values = c("Over-Allocated" = "#2ca02c", "Under-Allocated" = "#d62728")) +
+    age_bracket = factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54", "55 And Over"))
+  )
+
+# --- 4. BUILD THE ANIMATED PLOT ---
+p <- ggplot(plot_data, aes(x = age_bracket, y = fraction, fill = dataset, frame = year)) +
+  # Removed explicit width formatting here; we will let Plotly handle it
+  geom_col(position = "dodge", color = "black", alpha = 0.85) +
+  
+  scale_fill_manual(values = c("DHS Official" = "#4472C4", "My Imputed ACS" = "#ED7D31")) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  
   labs(
-    title = "Imputation Variance by State (2019)",
-    subtitle = "Percentage point difference from official DHS state distributions",
-    x = "",
-    y = "Variance (Percentage Points)",
-    fill = "Model Behavior vs DHS"
+    x = "Age Bracket",
+    y = "Percentage of Adult Population", 
+    fill = "" 
   ) +
-  theme_minimal()
+  
+  theme_bw() +
+  theme(
+    axis.title = element_text(face = "bold", size = 12),
+    axis.text = element_text(size = 11, color = "black"),
+    panel.grid.major.y = element_line(color = "gray80", size = 0.5),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.border = element_rect(color = "black", size = 1, fill = NA)
+    # Removed legend.position = "bottom" from ggplot; Plotly will handle it
+  )
 
-ggplotly(state_variance_plot)
+# Convert to interactive chart and force Plotly to fix the formatting
+ggplotly(p, tooltip = c("fill", "y", "frame")) %>%
+  layout(
+    # FIX 1: Force Plotly to group the bars and set specific, thick widths
+    barmode = "group",
+    bargap = 0.2,       # The space between age brackets
+    bargroupgap = 0.05, # The tiny space between the DHS and ACS bars
+    
+    # FIX 2: Safely position the legend below the x-axis title
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      xanchor = "center",
+      y = -0.15 
+    ),
+    
+    # Add bottom margin to make room for everything
+    margin = list(b = 100) 
+  ) %>%
+  animation_opts(frame = 1000, transition = 500, redraw = TRUE) %>%
+  animation_slider(
+    currentvalue = list(prefix = "Year: ", font = list(color = "black")),
+    # Push the slider down slightly so it doesn't overlap the new legend
+    pad = list(t = 40)
+  )
 ```
