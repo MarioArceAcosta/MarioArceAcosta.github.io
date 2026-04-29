@@ -1,19 +1,23 @@
 ---
 title: "Exploratory Data Analysis of DHS Estimates"
 description: "Initial data cleaning, extraction, and analysis of Department of Homeland Security reports."
-author: "Mario Arce Acosta"
-date: "2026-04-12"
+author: "Mario Arce Acosta and Dr.Veronica Sovero"
+date: "2026-04-29"
 categories: [R, EDA, Data Cleaning]
-#image: "dhs_thumbnail.jpg" # Save an image in the same folder to show on the blog grid
+code-fold: true
+image: "DHS Estimates Comparison by Age and Gender.png" # Save an image in the same folder to show on the blog grid
 ---
 
 ## The Objective
 
-Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data.
+Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data. The primary objective for this post is to examine the demographic distribution of the DHS estimates from 2009-2019, specifically focusing on the age and gender composition of the undocumented population over the decade.
 
 ## Loading the Data
 
-We'll start by pulling in t
+We'll start by pulling in the summary statistics and estimates from our database and our extracted DHS tables. Data preparation can be described in two steps:
+
+1.  Training machine learning models on cleaned SIPP data to impute undocumented status in the ACS using gradient-boosted trees. This process is identical to what can be found [here](https://marioarceacosta.github.io/leading_model.html).
+2.  Creating a high-level snapshot of this data to be uploaded via SQL to Supabase for future use, alongside our extracted official DHS demographic tables.
 
 ```{r}
 #| label: data-prep
@@ -24,7 +28,7 @@ library(tidyverse)
 library(DBI)
 library(RPostgres)
 
-# 1. Connect and fetch your highly granular ACS summary
+# --- 1. FETCH ACS DATA ---
 con <- dbConnect(
   RPostgres::Postgres(),
   dbname = "postgres",
@@ -33,243 +37,198 @@ con <- dbConnect(
   user = "postgres.dpuhypyqwupzesfkiplu",
   password = Sys.getenv("SUPABASE_PWD")
 )
-acs_raw_summary <- dbGetQuery(con, "SELECT * FROM acs_foreign_summary")
+acs_foreign_summary <- dbGetQuery(con, "SELECT * FROM acs_foreign_summary")
 dbDisconnect(con)
 
-# 2. Load the DHS Official CSVs
-totals <- read_csv("dhs_historical_totals.csv") %>%
-  filter(Data_Year >=2009 & Data_Year <= 2019) 
-dhs_states <- read_csv("dhs_historical_state.csv") %>%
-  filter(Data_Year >=2009 & Data_Year <= 2019) 
-dhs_countries <- read_csv("dhs_historical_country.csv") %>%
-  filter(Data_Year >=2009 & Data_Year <= 2019) 
-dhs_age <- read_csv("dhs_unauthorized_immigrants_age.csv") %>%
-  filter(Data_Year >=2009 & Data_Year <= 2019) 
+# --- 2. LOAD DHS CSVs ---
+dhs_male <- read_csv("Unauthorized Immigrant Population Estimates (Male) 2009-2022 - Unauthorized Immigrant Population Estimates (Male) 2009-2022.csv") %>%
+  filter(Year >= 2009 & Year <= 2019) %>%
+  rename(year = Year, age_bracket = Age, population_count = Count) %>%
+  mutate(gender = "Male")
 
-# 3. Build a Crosswalk for States
-fips_map <- c(
-  "1"="Alabama", "2"="Alaska", "4"="Arizona", "5"="Arkansas", "6"="California", 
-  "8"="Colorado", "9"="Connecticut", "10"="Delaware", "11"="District of Columbia", 
-  "12"="Florida", "13"="Georgia", "15"="Hawaii", "16"="Idaho", "17"="Illinois", 
-  "18"="Indiana", "19"="Iowa", "20"="Kansas", "21"="Kentucky", "22"="Louisiana", 
-  "23"="Maine", "24"="Maryland", "25"="Massachusetts", "26"="Michigan", 
-  "27"="Minnesota", "28"="Mississippi", "29"="Missouri", "30"="Montana", 
-  "31"="Nebraska", "32"="Nevada", "33"="New Hampshire", "34"="New Jersey", 
-  "35"="New Mexico", "36"="New York", "37"="North Carolina", "38"="North Dakota", 
-  "39"="Ohio", "40"="Oklahoma", "41"="Oregon", "42"="Pennsylvania", 
-  "44"="Rhode Island", "45"="South Carolina", "46"="South Dakota", "47"="Tennessee", 
-  "48"="Texas", "49"="Utah", "50"="Vermont", "51"="Virginia", "53"="Washington", 
-  "54"="West Virginia", "55"="Wisconsin", "56"="Wyoming"
-)
-names(totals)[names(totals) == "Data_Year"] <- "year"
-names(dhs_states)[names(dhs_states) == "Data_Year"] <- "year"
-names(dhs_countries)[names(dhs_countries) == "Data_Year"] <- "year"
-names(dhs_states)[names(dhs_states) == "Category_Value"] <- "state_name"
-names(dhs_countries)[names(dhs_countries) == "Category_Value"] <- "country_name"
-names(dhs_age)[names(dhs_age) == "Category_Value"] <- "age_bracket"
+dhs_female <- read_csv("Unauthorized Immigrant Population Estimates (Female) 2009-2022 - Unauthorized Immigrant Population Estimates (Female) 2009-2022.csv") %>%
+  filter(Year >= 2009 & Year <= 2019) %>%
+  rename(year = Year, age_bracket = Age, population_count = Count) %>%
+  mutate(gender = "Female")
 
-
-# Translate the ACS state codes into text so it matches the DHS CSV
-acs_base <- acs_raw_summary %>%
-  mutate(state_name = fips_map[as.character(statefip)])
-```
-
-```{r}
-# Roll up ACS data to the National level
-macro_acs <- acs_base %>%
-  group_by(year) %>%
-  summarise(
-    total_foreign_born = sum(total_foreign_born_pop, na.rm = TRUE),
-    # Let's use your high probability model for this example
-    imputed_count = sum(high_prob_count, na.rm = TRUE) 
-  )
-
-# Join and Calculate Rates
-macro_comparison <- macro_acs %>%
-  # Assuming dhs_totals has columns: year, dhs_unauth_count
-  left_join(totals, by = "year") %>%
+dhs_combined <- bind_rows(dhs_male, dhs_female) %>%
   mutate(
-    imputation_rate = imputed_count / total_foreign_born,
-    dhs_rate = Count / total_foreign_born,
-    variance = imputation_rate - dhs_rate
+    age_bracket = str_trim(str_replace_all(age_bracket, '=|"', '')),
+    dataset = "DHS Official"
+  ) %>%
+  filter(age_bracket != "Under 18", age_bracket != "Total", !is.na(year))
+
+# --- 3. PREP ACS GENDER DATA ---
+acs_combined <- acs_foreign_summary %>%
+  # Translate ACS sex codes to match DHS text
+  mutate(
+    gender = case_when(
+      fem == 1 ~ "Female",
+      fem == 0 ~ "Male",
+      TRUE ~ "Unknown"
+    )
+  ) %>%
+  filter(age_bracket != "Under 18", gender != "Unknown", !is.na(year)) %>%
+  group_by(year, age_bracket, gender) %>%
+  summarise(population_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
+  mutate(dataset = "Imputed ACS")
+
+# --- 4. MERGE AND APPLY THE OFFSET TRICK ---
+plot_data <- bind_rows(dhs_combined, acs_combined) %>%
+  mutate(
+    age_bracket = factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54", "55 And Over")),
+    gender = factor(gender, levels = c("Male", "Female")),
+    
+    # Create the interaction grouping for colors
+    fill_group = paste(gender, dataset, sep = " - "),
+    
+    # THE OFFSET TRICK: Shift ACS slightly left, DHS slightly right
+    age_numeric = as.numeric(age_bracket),
+    plot_x = ifelse(dataset == "Imputed ACS", age_numeric - 0.2, age_numeric + 0.2)
   )
 ```
 
-## Age Composition
+## Age & Gender Composition
 
-To assess whether our machine-learning imputations of undocumented status aligned with the estimates provided by DHS (both derived from the ACS to begin with), we examine the age composition of the undocumented population over the years 2009-2019. We can then compare how closely, or how far, the age composition of our machine-learning undocumented population estimates follow the age composition reported by DHS.
+To establish a solid demographic baseline, we examine the age and gender composition of the undocumented population reported by DHS over the years 2009-2019. By stacking the male and female estimates, we can simultaneously observe the total size of each age bracket alongside its internal gender distribution.
+
+### Faceted/Overview Plots of DHS Demographics
 
 ```{r}
-#| label: age-bracket-comparison-faceted
+#| label: age-gender-faceted
 #| fig-width: 10
 #| fig-height: 8
 #| message: false
 #| warning: false
 
-library(tidyverse)
-library(scales)
+library(ggplot2)
+library(scales) 
 library(plotly)
 
-# --- 1. CLEAN DHS STRINGS ---
-dhs_age_clean <- dhs_age %>%
-  mutate(age_bracket = str_replace_all(age_bracket, '=|"', ''))
-
-# --- 2. PREP YOUR IMPUTED DATA ---
-imputed_bracket_dist <- acs_base %>%
-  filter(age_bracket != "Under 18") %>%
-  group_by(year, age_bracket) %>%
-  summarise(imputed_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
-  group_by(year) %>%
-  mutate(
-    fraction = imputed_count / sum(imputed_count),
-    dataset = "My Imputed ACS"
-  ) %>%
-  ungroup()
-
-# --- 3. PREP YOUR BENCHMARK DATA ---
-dhs_age_benchmark <- dhs_age_clean %>%
-   filter(age_bracket != "Under 18") %>%
-   group_by(Data_Year, age_bracket) %>%
-   summarise(bench_count = sum(Count, na.rm = TRUE), .groups = "drop") %>%
-   group_by(Data_Year) %>%
-   mutate(
-     fraction = bench_count / sum(bench_count),
-     dataset = "DHS Official"
-   ) %>%
-   ungroup() %>%
-   rename(year = Data_Year)
-
-# Combine datasets and lock in the chronological factor levels
-plot_data <- bind_rows(imputed_bracket_dist, dhs_age_benchmark) %>%
-  mutate(
-    age_bracket = factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54", "55 And Over"))
-  ) %>%
-  select(year, age_bracket, fraction, dataset)
-
-# --- 4. BUILD THE FACETED PLOT ---
-p_age_compare <- ggplot(plot_data, aes(x = age_bracket, y = fraction, fill = dataset)) +
-  # Using your exact, stable syntax
-  geom_col(position = "dodge", alpha = 0.9) +
+p_comparison_faceted <- ggplot(plot_data, aes(x = plot_x, y = population_count, fill = fill_group)) +
+  # Because the X coordinates are physically separated, "stack" will only stack 
+  # Male on top of Female within the same dataset!
+  geom_col(position = "stack", color = "black", alpha = 0.9, width = 0.35) +
   
-  scale_fill_manual(values = c("DHS Official" = "#4472C4", "My Imputed ACS" = "#ED7D31")) +
-  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  # Assign distinct colors to distinguish ACS from DHS visually
+  scale_fill_manual(values = c(
+    "Male - DHS Official"   = "#2471A3", # Dark Blue
+    "Female - DHS Official" = "#7FB3D5", # Dark Red
+    "Male - Imputed ACS"   = "#BA4A00", # Light Blue
+    "Female - Imputed ACS" = "#F5B041"  # Light Red
+  )) +
+  
+  # Map the numeric X-axis back to the categorical Age Bracket text
+  scale_x_continuous(
+    breaks = 1:5,
+    labels = levels(plot_data$age_bracket)
+  ) +
+  scale_y_continuous(labels = label_comma()) +
   
   labs(
-    title = "Age Distribution: Imputed ACS vs. DHS Official",
+    title = "Population Estimates by Age and Gender: Imputed ACS vs DHS Official",
     x = "Age Bracket",
-    y = "Percentage of Adult Population",
-    fill = "Dataset"
+    y = "Total Population Estimate",
+    fill = "Dataset & Gender"
   ) +
   
   theme_minimal() +
   theme(
-    # Angle the x-axis text slightly so the brackets don't overlap
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    # Add a subtle border around each year's panel for clarity
-    panel.border = element_rect(color = "gray80", fill = NA)
+    axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+    panel.border = element_rect(color = "gray80", fill = NA),
+    legend.position = "bottom",
+    
+    # 2. Force extra space between the facet panels
+    panel.spacing = unit(2, "lines"), 
+    # Make the year titles a bit bolder to stand out
+    strip.text = element_text(face = "bold", margin = margin(b = 10, t = 10)) 
   ) +
-  
-  # THIS REPLACES THE SLIDER: Creates a beautiful 3-column grid of years
   facet_wrap(~ year, ncol = 3)
 
-# Convert to an interactive web chart (no animation bugs!)
-ggplotly(p_age_compare, tooltip = c("fill", "y", "x"))
+# 3. Give the ggplotly conversion a slight margin push for its own legend
+ggplotly(p_comparison_faceted, tooltip = c("fill", "y")) %>%
+  layout(legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.1), margin = list(b = 60))
 ```
 
+### Year-by-Year Interactive Composition
+
 ```{r}
-#| label: age-bracket-comparison-native-plotly
+#| label: age-gender-interactive
 #| fig-width: 8
 #| fig-height: 5
 #| message: false
 #| warning: false
 
-library(tidyverse)
-library(plotly) 
+library(plotly)
 
-# --- 1 & 2 & 3. PREP DATA (Identical to before) ---
-dhs_age_clean <- dhs_age %>%
-  mutate(age_bracket = str_replace_all(age_bracket, '=|"', ''))
-
-imputed_bracket_dist <- acs_base %>%
-  filter(age_bracket != "Under 18") %>% 
-  group_by(year, age_bracket) %>%
-  summarise(imputed_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
-  group_by(year) %>% 
-  mutate(
-    fraction = imputed_count / sum(imputed_count),
-    dataset = "My Imputed ACS" 
-  ) %>%
-  ungroup()
-
-dhs_age_benchmark <- dhs_age_clean %>%
-   filter(age_bracket != "Under 18") %>%
-   group_by(Data_Year, age_bracket) %>%
-   summarise(bench_count = sum(Count, na.rm = TRUE), .groups = "drop") %>%
-   group_by(Data_Year) %>% 
-   mutate(
-     fraction = bench_count / sum(bench_count),
-     dataset = "DHS Official"
-   ) %>%
-   ungroup() %>%
-   rename(year = Data_Year) 
-
-plot_data <- bind_rows(imputed_bracket_dist, dhs_age_benchmark) %>%
-  mutate(
-    age_bracket = factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54", "55 And Over"))
-  )
-
-# --- 4. BUILD WITH NATIVE PLOTLY ---
-p_interactive <- plot_ly(
+p_interactive_comparison <- plot_ly(
   data = plot_data,
-  x = ~age_bracket,
-  y = ~fraction,
-  color = ~dataset,
-  colors = c("DHS Official" = "#4472C4", "My Imputed ACS" = "#ED7D31"),
-  frame = ~year,          # This creates the slider
-  type = 'bar',           # Explicitly tells Plotly this is a bar chart
-  hovertemplate = '%{y:.1%}<extra></extra>' # Clean percentage hover text
+  x = ~plot_x,
+  y = ~population_count,
+  color = ~fill_group,
+  colors = c(
+    "Male - DHS Official"   = "#2471A3", 
+    "Female - DHS Official" = "#7FB3D5", 
+    "Male - Imputed ACS"   = "#BA4A00", 
+    "Female - Imputed ACS" = "#F5B041"
+  ),
+  frame = ~year,          
+  type = 'bar', 
+  text = ~dataset,
+  hovertemplate = '<b>%{text}</b><br>%{y:,.0f}<extra></extra>' 
 ) %>%
   layout(
-    barmode = 'group',    # This guarantees the bars sit side-by-side cleanly
-    bargap = 0.15,        # Adjusts thickness of the bars
+    barmode = 'stack',    
     
     title = list(
-      text = "<b>Age Distribution: Imputed ACS vs. DHS Official</b>",
+      text = "<b>Interactive Comparison: Imputed ACS vs DHS Official</b>",
       font = list(family = "Arial", size = 16),
-      x = 0.5 # Centers the title
+      x = 0.5 
     ),
     
+    # Map the numeric Plotly axis back to text labels
     xaxis = list(
       title = "<b>Age Bracket</b>",
+      tickvals = 1:5,
+      ticktext = levels(plot_data$age_bracket),
       tickfont = list(size = 12)
     ),
     
     yaxis = list(
-      title = "<b>Percentage of Adult Population</b>",
-      tickformat = ".0%", # Formats y-axis as 10%, 20%, etc.
-      range = c(0, max(plot_data$fraction) * 1.1) # Adds a little headroom above the tallest bar
+      title = "<b>Total Population Estimate</b>",
+      tickformat = ",d", 
+      range = c(0, max(
+        plot_data %>% 
+          group_by(year, plot_x) %>% 
+          summarise(total = sum(population_count, na.rm=TRUE), .groups="drop") %>% 
+          pull(total)
+      ) * 1.1)
     ),
     
+    # 1. Push the legend further down (from -0.25 to -0.5 or -0.6)
     legend = list(
-      orientation = "h",  # Horizontal legend
-      x = 0.5,            # Center horizontally
+      orientation = "h",  
+      x = 0.5,            
       xanchor = "center",
-      y = -0.2            # Push below the x-axis
+      y = -0.5            
     ),
     
-    margin = list(b = 80) # Adds bottom margin so the legend doesn't get cut off
+    # 2. Increase the bottom margin significantly (from 100 to 160)
+    margin = list(b = 160) 
   ) %>%
-  
-  # Configure the slider speed and transition
   animation_opts(
-    frame = 1200,         # How long each year stays on screen (ms)
-    transition = 500,     # How smoothly the bars animate to their new heights
-    redraw = FALSE        # Prevents the screen from flickering
+    frame = 1200,         
+    transition = 500,     
+    redraw = FALSE        
   ) %>%
   animation_slider(
-    currentvalue = list(prefix = "<b>Year:</b> ", font = list(color = "black"))
+    currentvalue = list(prefix = "<b>Year:</b> ", font = list(color = "black")),
+    pad = list(t = 40)
   )
 
-p_interactive
-
+p_interactive_comparison
 ```
+
+## Summary
+
+From these simple comparisons we can notice that our GBM imputations appears to overestimate the number of undocumented immigrants in age brackets 18-24 and 25-34, and underestimate undocumented immigrants in age brackets 35-44 and 45-54.
