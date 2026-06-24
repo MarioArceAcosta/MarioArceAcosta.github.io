@@ -1,0 +1,398 @@
+---
+title: "Data Drift Analysis with CatBoost"
+description: "Quantifying distribution similarity between Imputed ACS and DHS Official estimates using PSI, and (psuedo) KS statistics."
+author: "Mario Arce Acosta and Dr. Veronica Sovero"
+date: "2026-05-18"
+categories: [R, Statistical Testing, Model Validation]
+code-fold: true
+---
+
+## 1. Loading Data
+
+```{r}
+#| label: data-prep
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(DBI)
+library(RPostgres)
+library(arrow)
+
+
+# --- 1. FETCH ACS DATA ---
+# --- 1. FETCH ACS DATA (Direct Connection Workaround) ---
+#con <- dbConnect(
+  #RPostgres::Postgres(),
+  #dbname = "postgres",
+  #host = "aws-1-us-east-2.pooler.supabase.com", 
+  #port = 6543,
+  #user = "postgres.dpuhypyqwupzesfkiplu",
+  #password = Sys.getenv("SUPABASE_PWD"),
+  #connect_timeout = 10
+#)
+
+#acs_foreign_summary <- dbGetQuery(con, "SELECT * FROM acs_catboost_summary")
+#dbDisconnect(con)
+
+
+acs_foreign_summary <- read_parquet("acs_catboost_summary_rows.parquet")
+
+# --- 2. LOAD DHS CSVs ---
+dhs_male <- read_csv("Unauthorized Immigrant Population Estimates (Male) 2009-2022 - Unauthorized Immigrant Population Estimates (Male) 2009-2022.csv") %>%
+  filter(Year >= 2009 & Year <= 2019) %>%
+  rename(year = Year, age_bracket = Age, population_count = Count) %>%
+  mutate(gender = "Male")
+
+dhs_female <- read_csv("Unauthorized Immigrant Population Estimates (Female) 2009-2022 - Unauthorized Immigrant Population Estimates (Female) 2009-2022.csv") %>%
+  filter(Year >= 2009 & Year <= 2019) %>%
+  rename(year = Year, age_bracket = Age, population_count = Count) %>%
+  mutate(gender = "Female")
+
+dhs_combined <- bind_rows(dhs_male, dhs_female) %>%
+  mutate(
+    age_bracket = str_trim(str_replace_all(age_bracket, '=|"', '')),
+    dataset = "DHS Official"
+  ) %>%
+  filter(age_bracket != "Under 18", age_bracket != "Total", !is.na(year))
+
+# --- 3. PREP ACS GENDER DATA ---
+acs_combined <- acs_foreign_summary %>%
+  # Translate ACS sex codes to match DHS text
+  mutate(
+    gender = case_when(
+      fem == 1 ~ "Female",
+      fem == 0 ~ "Male",
+      TRUE ~ "Unknown"
+    )
+  ) %>%
+  filter(age_bracket != "Under 18", gender != "Unknown", !is.na(year)) %>%
+  group_by(year, age_bracket, gender) %>%
+  #Change this back to recall 
+  summarise(population_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
+  mutate(dataset = "Imputed ACS")
+
+
+
+# --- 4. MERGE AND APPLY THE OFFSET TRICK ---
+plot_data <- bind_rows(dhs_combined, acs_combined) %>%
+  mutate(
+    age_bracket = factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54", "55 And Over")),
+    gender = factor(gender, levels = c("Male", "Female")),
+    
+    # Create the interaction grouping for colors
+    fill_group = paste(gender, dataset, sep = " - "),
+    
+    # THE OFFSET TRICK: Shift ACS slightly left, DHS slightly right
+    age_numeric = as.numeric(age_bracket),
+    plot_x = ifelse(dataset == "Imputed ACS", age_numeric - 0.2, age_numeric + 0.2)
+  )
+```
+
+## 2. Calculating Distribution Metrics (18-54 Population)
+
+```{r}
+#| label: metrics-calculation
+#| message: false
+#| warning: false
+
+# 1. Filter to 18-54 and Recalculate 100% Denominators
+plot_data_filtered <- plot_data %>%
+  filter(year != 2013) %>%
+  filter(age_bracket %in% c("18-24", "25-34", "35-44", "45-54")) %>%
+  group_by(year, dataset) %>%
+  mutate(
+    total_pop_year = sum(population_count, na.rm = TRUE),
+    percentage = population_count / total_pop_year
+  ) %>%
+  ungroup()
+
+# 2. Recalculate Metrics (PSI, KS) for the new 18-54 Universe
+metrics_calc <- plot_data_filtered %>%
+  group_by(year, age_bracket, gender, dataset) %>%
+  summarise(percentage = sum(percentage, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = dataset, values_from = percentage) %>%
+  rename(P_ACS = `Imputed ACS`, Q_DHS = `DHS Official`) %>%
+  mutate(
+    P_ACS = if_else(is.na(P_ACS) | P_ACS == 0, 0.00001, as.numeric(P_ACS)),
+    Q_DHS = if_else(is.na(Q_DHS) | Q_DHS == 0, 0.00001, as.numeric(Q_DHS))
+  )
+
+final_metrics <- metrics_calc %>%
+  group_by(year) %>%
+  summarise(
+    PSI = sum((P_ACS - Q_DHS) * log(P_ACS / Q_DHS)),
+    .groups = "drop"
+  ) %>%
+  left_join(
+    metrics_calc %>%
+      group_by(year, age_bracket) %>%
+      summarise(P_ACS_Age = sum(P_ACS), Q_DHS_Age = sum(Q_DHS), .groups = "drop") %>%
+      group_by(year) %>%
+      arrange(year, age_bracket) %>%
+      mutate(CDF_ACS = cumsum(P_ACS_Age), CDF_DHS = cumsum(Q_DHS_Age), abs_diff = abs(CDF_ACS - CDF_DHS)) %>%
+      summarise(Max_CDF_Diff_Age = max(abs_diff), .groups = "drop"),
+    by = "year"
+  )
+```
+
+## 3. Distribution Shift Metrics Over Time
+
+```{r}
+#| label: metrics-over-time
+#| fig-width: 10
+#| fig-height: 5
+#| message: false
+#| warning: false
+
+library(ggplot2)
+
+# Pivot metrics for plotting
+metrics_long <- final_metrics %>%
+  pivot_longer(
+    cols = c(PSI, Max_CDF_Diff_Age),
+    names_to = "Metric",
+    values_to = "Value"
+  ) %>%
+  mutate(
+    Metric = case_when(
+      Metric == "Max_CDF_Diff_Age" ~ "Max CDF Difference (KS Proxy)",
+      TRUE ~ Metric
+    )
+  )
+
+# Plot the trendlines
+p_metrics_trend <- ggplot(metrics_long, aes(x = year, y = Value, color = Metric, group = Metric)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  scale_x_continuous(breaks = c(2009:2012, 2014:2019)) +
+  scale_color_manual(values = c("Max CDF Difference (KS Proxy)" = "#BA4A00", "PSI" = "#5D3A9B")) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Distribution Shift Metrics Over Time",
+    subtitle = "Tracking the stability of the imputed ACS distribution against DHS official estimates",
+    x = "Year",
+    y = "Metric Score",
+    color = "Metric"
+  ) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    plot.title = element_text(face = "bold", size = 16),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+p_metrics_trend
+ggsave("Distribution_Metrics_Trend.png", plot = p_metrics_trend, width = 10, height = 5, dpi = 300)
+```
+
+## 4. Horizontal Distribution Overlay
+
+```{r}
+#| label: distribution-bars-horizontal
+#| fig-width: 16
+#| fig-height: 8
+#| message: false
+#| warning: false
+
+library(scales)
+
+# 1. Configure the Scorecards
+scorecards <- final_metrics %>%
+  mutate(
+    score_text = sprintf("PSI: %.3f\nMax CDF Diff.: %.3f", PSI, Max_CDF_Diff_Age),
+    x_pos = 4.5, 
+    y_pos = Inf  
+  )
+
+# 2. Aggregate Genders & Apply Offset Logic
+plot_data_bars <- plot_data_filtered %>%
+  group_by(year, dataset, age_bracket) %>%
+  summarise(percentage = sum(percentage, na.rm = TRUE), .groups = "drop") %>%
+  mutate(
+    age_numeric = as.numeric(factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54"))),
+    plot_x = ifelse(dataset == "Imputed ACS", age_numeric - 0.2, age_numeric + 0.2)
+  )
+
+# 3. Generate the Final Plot (Horizontal Facets)
+p_bars_final <- ggplot(plot_data_bars, aes(x = plot_x, y = percentage, fill = dataset)) +
+  
+  geom_col(width = 0.4, color = "black", alpha = 0.9) +
+  
+  geom_text(aes(label = percent(percentage, accuracy = 0.1)), 
+            vjust = -0.5, size = 3, fontface = "bold") +
+  
+  geom_label(
+    data = scorecards,
+    aes(x = x_pos, y = y_pos, label = score_text),
+    inherit.aes = FALSE,
+    hjust = 1, vjust = 1.2,
+    fill = "gray98", color = "black", fontface = "bold", size = 3, alpha = 0.9, 
+    label.padding = unit(0.3, "lines"), label.size = 0.3
+  ) +
+  
+  scale_fill_manual(values = c("DHS Official" = "#7FB3D5", "Imputed ACS" = "#E66100")) +
+  
+  # Increased the expansion on the right side to 40% to comfortably fit the scorecard in smaller panels
+  scale_x_continuous(breaks = 1:4, labels = levels(factor(plot_data_bars$age_bracket)), expand = expansion(mult = c(0.05, 0.40))) +
+  scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0.25))) +
+  
+  labs(
+    title = "Age Distribution (18-54 Population): Imputed ACS vs. DHS Official",
+    subtitle = "Sequential year-over-year comparison",
+    x = "Age Bracket",
+    y = "Percentage of Filtered Population",
+    fill = "Dataset"
+  ) +
+  
+  # THE HORIZONTAL FIX: ncol = 5 splits the 10 years into 2 rows of 5 panels
+  facet_wrap(~ year, ncol = 5) +
+  
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top", 
+    legend.title = element_blank(),
+    panel.spacing = unit(0.5, "lines"), 
+    strip.text = element_text(face = "bold", size = 12, hjust = 0), 
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(10, 10, 10, 10) 
+  )
+
+p_bars_final
+ggsave("Distribution_Overlay_Bars_Horizontal.png", plot = p_bars_final, width = 16, height = 8, dpi = 300)
+```
+
+## 5. Vertical Distribution Overlay
+
+```{r}
+#| label: distribution-bars-labeled-final
+#| fig-width: 12
+#| fig-height: 22
+#| message: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(tidyr)
+
+# ==============================================================================
+# 1. Filter to 18-54 and Recalculate 100% Denominators
+# ==============================================================================
+plot_data_filtered <- plot_data %>%
+  filter(year != 2013) %>%
+  # Drop out-of-sample ages to strictly match the SIPP training domain
+  filter(age_bracket %in% c("18-24", "25-34", "35-44", "45-54")) %>%
+  
+  # Recalculate the denominator so these 4 brackets equal exactly 100%
+  group_by(year, dataset) %>%
+  mutate(
+    total_pop_year = sum(population_count, na.rm = TRUE),
+    percentage = population_count / total_pop_year
+  ) %>%
+  ungroup()
+
+# ==============================================================================
+# 2. Recalculate Metrics (PSI, KS) for the new 18-54 Universe
+# ==============================================================================
+metrics_calc <- plot_data_filtered %>%
+  group_by(year, age_bracket, gender, dataset) %>%
+  summarise(percentage = sum(percentage, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = dataset, values_from = percentage) %>%
+  rename(P_ACS = `Imputed ACS`, Q_DHS = `DHS Official`) %>%
+  mutate(
+    P_ACS = if_else(is.na(P_ACS) | P_ACS == 0, 0.00001, as.numeric(P_ACS)),
+    Q_DHS = if_else(is.na(Q_DHS) | Q_DHS == 0, 0.00001, as.numeric(Q_DHS))
+  )
+
+scorecards <- metrics_calc %>%
+  group_by(year) %>%
+  summarise(
+    # Dropped KL Divergence; focusing entirely on the symmetric PSI
+    PSI = sum((P_ACS - Q_DHS) * log(P_ACS / Q_DHS)),
+    .groups = "drop"
+  ) %>%
+  left_join(
+    metrics_calc %>%
+      group_by(year, age_bracket) %>%
+      summarise(P_ACS_Age = sum(P_ACS), Q_DHS_Age = sum(Q_DHS), .groups = "drop") %>%
+      group_by(year) %>%
+      arrange(year, age_bracket) %>%
+      mutate(CDF_ACS = cumsum(P_ACS_Age), CDF_DHS = cumsum(Q_DHS_Age), abs_diff = abs(CDF_ACS - CDF_DHS)) %>%
+      summarise(Max_CDF_Diff_Age = max(abs_diff), .groups = "drop"),
+    by = "year"
+  ) %>%
+  mutate(
+    score_text = sprintf("PSI: %.3f\nMax CDF Diff.: %.3f", PSI, Max_CDF_Diff_Age),
+    # Pushed safely to the far right, past the 4th age bucket
+    x_pos = 4.5, 
+    y_pos = Inf  
+  )
+
+# ==============================================================================
+# 3. Aggregate Genders & Apply Offset Logic
+# ==============================================================================
+plot_data_bars <- plot_data_filtered %>%
+  # Aggregate male/female so we only plot one total bar per age bracket
+  group_by(year, dataset, age_bracket) %>%
+  summarise(percentage = sum(percentage, na.rm = TRUE), .groups = "drop") %>%
+  mutate(
+    age_numeric = as.numeric(factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54"))),
+    # Offset by half the bar width so they sit perfectly flush
+    plot_x = ifelse(dataset == "Imputed ACS", age_numeric - 0.2, age_numeric + 0.2)
+  )
+
+# ==============================================================================
+# 4. Generate the Final Plot
+# ==============================================================================
+p_bars_final <- ggplot(plot_data_bars, aes(x = plot_x, y = percentage, fill = dataset)) +
+  
+  # A. The Bars: Added color = "black" for outlines, width perfectly matches offset
+  geom_col(width = 0.4, color = "black", alpha = 0.9) +
+  
+  # B. Bar Height Labels: Applied to BOTH datasets
+  geom_text(aes(label = percent(percentage, accuracy = 0.1)), 
+            vjust = -0.5, size = 3.5, fontface = "bold") +
+  
+  # C. Scorecard Annotation
+  geom_label(
+    data = scorecards,
+    aes(x = x_pos, y = y_pos, label = score_text),
+    inherit.aes = FALSE,
+    hjust = 1, vjust = 1.2,
+    fill = "gray98", color = "black", fontface = "bold", size = 3.5, alpha = 0.9, 
+    label.padding = unit(0.4, "lines"), label.size = 0.3
+  ) +
+  
+  scale_fill_manual(values = c("DHS Official" = "#7FB3D5", "Imputed ACS" = "#E66100")) +
+  
+  # Added a 15% expansion on the right side of the x-axis to make room for the scorecard
+  scale_x_continuous(breaks = 1:4, labels = levels(factor(plot_data_bars$age_bracket)), expand = expansion(mult = c(0.05, 0.15))) +
+  scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0.25))) +
+  
+  labs(
+    title = "Age Distribution (18-54 Population): Imputed ACS vs. DHS Official",
+    x = "Age Bracket",
+    y = "Percentage of Filtered Population",
+    fill = "Dataset"
+  ) +
+  
+  facet_wrap(~ year, ncol = 1) +
+  
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "top", 
+    legend.title = element_blank(),
+    panel.spacing = unit(0.2, "lines"), 
+    strip.text = element_text(face = "bold", size = 12, hjust = 0), 
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(5, 5, 5, 5) 
+  )
+
+p_bars_final
+
+ggsave("Distribution_Overlay_Bars_Final.png", plot = p_bars_final, width = 8, height = 18, dpi = 300)
+```

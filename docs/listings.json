@@ -2,6 +2,7 @@
   {
     "listing": "/blog.html",
     "items": [
+      "/posts/dhs_eda/Data Drift Analysis with CatBoost.html",
       "/posts/dhs_eda/index.html"
     ]
   },
@@ -9,7 +10,6 @@
     "listing": "/projects.html",
     "items": [
       "/presentations.html",
-      "/research.html",
       "/msrip_symposium.html",
       "/xcite_dashboard.html"
     ]

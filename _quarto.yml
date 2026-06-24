@@ -8,29 +8,21 @@ website:
     right:
       - href: index.qmd
         text: Home
-
-      - text: "Research"
-        menu:
-        - href: https://marioarceacosta.shinyapps.io/shiny/
-          text: (In Progress) Shiny Dashboard
-        - href: research.qmd
-          text: ML Model Comparisons
-        - href: leading_model.qmd
-          text: Leading Model Performance
-        - href: stata_analysis.qmd
-          text: Regression Analysis
+      - href: projects.qmd
+        text: Portfolio
+      - href: freelance.qmd
+        text: Freelancing
           
       - href: blog.qmd
         text: Blog    
           
       - text: "Other Work"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
-        - href: projects.qmd
-          text: Portfolio
+        - href: https://marioarceacosta.shinyapps.io/shiny/
+          text: (In Progress) Shiny Dashboard
         - href: presentations.qmd
           text: Conferences & Presentations
-        - href: freelance.qmd
-          text: Freelancing
+
         
       - href: files/_Academic__Mario_CV.pdf
         text: CV

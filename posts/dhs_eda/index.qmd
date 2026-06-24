@@ -35,7 +35,8 @@ con <- dbConnect(
   host = "aws-1-us-east-2.pooler.supabase.com", 
   port = 6543,
   user = "postgres.dpuhypyqwupzesfkiplu",
-  password = Sys.getenv("SUPABASE_PWD")
+  password = Sys.getenv("SUPABASE_PWD"),
+  connect_timeout = 10
 )
 acs_foreign_summary <- dbGetQuery(con, "SELECT * FROM acs_foreign_summary")
 dbDisconnect(con)
@@ -70,8 +71,11 @@ acs_combined <- acs_foreign_summary %>%
   ) %>%
   filter(age_bracket != "Under 18", gender != "Unknown", !is.na(year)) %>%
   group_by(year, age_bracket, gender) %>%
+  #Change this back to recall 
   summarise(population_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
   mutate(dataset = "Imputed ACS")
+
+
 
 # --- 4. MERGE AND APPLY THE OFFSET TRICK ---
 plot_data <- bind_rows(dhs_combined, acs_combined) %>%
