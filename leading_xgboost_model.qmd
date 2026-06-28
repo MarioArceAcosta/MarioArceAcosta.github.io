@@ -1,5 +1,5 @@
 ---
-title: "Leading XGBoost Model File"
+title: "Leading XGBoost Model"
 subtitle: "Train SIPP XGBoost model, score ACS, and compare target-like validation performance"
 author: "Dr. Veronica Sovero and Mario Arce Acosta"
 date: last-modified
