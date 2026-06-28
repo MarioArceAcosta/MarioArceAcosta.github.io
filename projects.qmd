@@ -2,7 +2,7 @@
 title: "Portfolio"
 listing:
   contents:
-    - research.qmd
+    - leading_xgboost_model.qmd
     - presentations.qmd
     - msrip_symposium.qmd
     - xcite_dashboard.qmd

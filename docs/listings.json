@@ -9,6 +9,7 @@
   {
     "listing": "/projects.html",
     "items": [
+      "/leading_xgboost_model.html",
       "/presentations.html",
       "/msrip_symposium.html",
       "/xcite_dashboard.html"

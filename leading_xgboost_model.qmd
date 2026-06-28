@@ -1,39 +1,47 @@
 ---
-title: "Leading XGBoost Model Testing File"
+title: "Leading XGBoost Model File"
 subtitle: "Train SIPP XGBoost model, score ACS, and compare target-like validation performance"
+author: "Dr. Veronica Sovero and Mario Arce Acosta"
+date: last-modified
+categories: [Research, ML, Economics, Higher Education]
+image: /research_files/figure-html/GBM Performance-1.png
 format:
-  pdf:
-    toc: false
-    number-sections: false
-    colorlinks: true
-execute:
-  echo: true
-  warning: false
-  message: false
-editor: 
-  markdown: 
-    wrap: 72
+  html:
+    toc: true                # Floating Table of Contents
+    toc-location: left       # Puts navigation on the left (like a documentation site)
+    toc-depth: 3             # Allows jumping to sub-sections
+    code-fold: show          # Default to 'show' if you want to emphasize the code, or 'true' to hide it
+    code-tools: true         # Adds a "Source Code" button at top right
+    code-link: true          # Hyperlinks functions to their R documentation
+    df-print: paged          # Makes large tables scrollable/searchable
+    number-sections: true    # Adds "1.1, 1.2" structure for rigor
 ---
 
-```{r}
-# ============================================================================
-# PURPOSE
-# ============================================================================
-# This file is the leading XGBoost prediction workflow. It trains the SIPP donor
-# model, scores ACS, validates the target-like threshold choice, and exports the
-# Stata-facing prediction file.
-#
-# Current official threshold rule:
-# - Train the XGBoost model on the SIPP donor sample.
-# - Define quartile thresholds using the target-like SIPP test sample only.
-# - Export those target-like threshold groups to ACS using the downstream names:
-#     gbm_undocu_p
-#     gbm_undocu_q
-#     gbm_high_prob
-#     gbm_low_prob
-#     gbm_high_recall
-# ============================================================================
+# Abstract
 
+This study estimates the extent of education–occupation mismatch and the associated wage penalties for undocumented college graduates. Using data from the American Community Survey (ACS), we classify workers as vertically mismatched (higher educational attainment than is typical for the occupation) or horizontally mismatched (field of degree is not typical for the occupation). Because the ACS does not identify undocumented status, we train machine learning models on the Survey of Income and Program Participation (SIPP) and use the predictions to impute status in the ACS. This approach enables new analyses of labor market outcomes for undocumented college graduates in nationally representative surveys. Results indicate that undocumented status is linked to higher rates of both vertical and horizontal mismatch, as well as wage penalties of roughly 4–7 percent. These penalties are smaller among the DACA-eligible and in states with more inclusive immigrant policy climates.
+
+# Purpose
+
+This file is the leading XGBoost prediction workflow. It trains the SIPP donor model, scores ACS, validates the target-like threshold choice, and exports the Stata-facing prediction file. Current official threshold rule:
+
+-   Train the XGBoost model on the SIPP donor sample.
+
+-   Define quartile thresholds using the target-like SIPP test sample only.
+
+-   Export those target-like threshold groups to ACS using the downstream names:
+
+    -   gbm_undocu_p
+
+    -   gbm_undocu_q
+
+    -   gbm_high_prob
+
+    -   gbm_low_prob
+
+    -   gbm_high_recall
+
+```{r}
 report_timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 cat("Report rendered at:", report_timestamp, "\n")
 ```
@@ -48,16 +56,10 @@ library(pROC)
 library(knitr)
 ```
 
-```{r}
-# ============================================================================
-# PATHS AND FILE NAMES
-# ============================================================================
+# Paths and File Names
 
-if (Sys.info()["sysname"] == "Windows") {
-  base_dir <- "G:/Shared drives/Undocu Research"
-} else {
-  base_dir <- "~/Library/CloudStorage/GoogleDrive-vsovero@ucr.edu/Shared drives/Undocu Research"
-}
+```{r}
+base_dir <- "G:/Shared drives/Undocu Research"
 
 data_path <- file.path(base_dir, "Data")
 
@@ -75,11 +77,9 @@ leading_xgb_model_file <- file.path(ml_output_path, "leading_xgb_model.rds")
 leading_xgb_metadata_file <- file.path(ml_output_path, "leading_xgb_metadata.rds")
 ```
 
-```{r}
-# ============================================================================
-# MODEL SETTINGS
-# ============================================================================
+# Model Settings
 
+```{r}
 seed <- 1
 
 # XGBoost tuning grid.
@@ -96,17 +96,11 @@ xgb_nfold <- 5
 xgb_early_stopping_rounds <- 50
 ```
 
-```{r}
-# ============================================================================
-# MODEL FEATURES
-# ============================================================================
-# This mirrors the cleaned GBM file.
-#
-# Because the donor sample below is restricted to employed respondents, employed
-# is intentionally not included as a predictor. The target-like validation sample
-# still uses employed == 1 as part of the validation definition.
-# ============================================================================
+# Model Features
 
+This mirrors the cleaned GBM file. Because the donor sample below is restricted to employed respondents, employed is intentionally not included as a predictor. The target-like validation sample still uses employed == 1 as part of the validation definition.
+
+```{r}
 features <- c(
   "age",
   "fem",
@@ -129,11 +123,9 @@ features <- c(
 )
 ```
 
-```{r}
-# ============================================================================
-# READ CLEANED SIPP AND ACS FILES
-# ============================================================================
+# Read Cleaned SIPP and ACS Files
 
+```{r}
 sipp_raw <- read_csv(sipp_file, show_col_types = FALSE)
 acs_raw <- read_csv(acs_file, show_col_types = FALSE)
 
@@ -144,15 +136,11 @@ tibble(
   kable()
 ```
 
-```{r}
-# ============================================================================
-# PREPARE MODEL SAMPLES
-# ============================================================================
-# EDIT THE SIPP FILTER HERE to test alternative donor samples.
-# Current comparison donor sample: employed SIPP respondents ages 18-55.
-# This matches the preferred cleaned GBM testing file.
-# ============================================================================
+# Prepare Model Samples
 
+We can edit the SIPP filters here to test alternative donor samples. Current comparison donor sample: employed SIPP respondents ages 18-55. This matches the preferred cleaned GBM testing file.
+
+```{r}
 sipp <- sipp_raw %>%
   mutate(
     # SIPP outcome may be stored as "X1", "1", or numeric 1 depending on export.
@@ -185,11 +173,9 @@ tibble(
   kable()
 ```
 
-```{r}
-# ============================================================================
-# SPLIT SIPP INTO TRAINING AND TEST SAMPLES
-# ============================================================================
+# Split SIPP into Training and Test Samples
 
+```{r}
 set.seed(seed)
 
 train_index <- createDataPartition(
@@ -216,14 +202,11 @@ tibble(
   kable(digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# CREATE XGBOOST MATRICES
-# ============================================================================
-# XGBoost requires numeric matrices. The variables in features are already coded
-# numerically, but mutate(across(..., as.numeric)) makes that explicit.
-# ============================================================================
+# Create XGBoost Matrices
 
+XGBoost requires numeric matrices. The variables in features are already coded numerically, but mutate(across(..., as.numeric)) makes that explicit.
+
+```{r}
 train_matrix <- train_xgb %>%
   select(all_of(features)) %>%
   mutate(across(everything(), as.numeric)) %>%
@@ -247,15 +230,12 @@ dtest  <- xgb.DMatrix(data = test_matrix, label = test_y)
 dacs   <- xgb.DMatrix(data = acs_matrix)
 ```
 
-```{r}
-# ============================================================================
-# TUNE XGBOOST MODEL USING CROSS-VALIDATED AUC
-# ============================================================================
-# For each grid row, xgb.cv chooses the best number of boosting rounds using
-# held-out folds from the training sample. We then choose the grid row with the
-# highest cross-validated test AUC.
-# ============================================================================
+# Tune XGBoost Model Using Cross-Validated AUC
 
+For each grid row, xgb.cv chooses the best number of boosting rounds usingheld-out folds from the training sample. We then choose the grid row with the highest cross-validated test AUC.
+
+```{r}
+#| cache: true
 xgb_grid$optimal_rounds <- NA_integer_
 xgb_grid$cv_auc <- NA_real_
 
@@ -293,11 +273,10 @@ xgb_grid <- xgb_grid %>%
 kable(xgb_grid, digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# TRAIN FINAL XGBOOST MODEL USING BEST GRID ROW
-# ============================================================================
+# Train Final XGBoost Model Using Best Grid Row
 
+```{r}
+#| cache: true
 best_xgb <- xgb_grid[1, ]
 
 final_params <- list(
@@ -332,14 +311,11 @@ tibble(
   kable(digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# VARIABLE IMPORTANCE
-# ============================================================================
-# Gain is the most useful XGBoost importance metric for this purpose. It measures
-# the relative contribution of splits using each variable.
-# ============================================================================
+# Variable Importance
 
+Gain is the most useful XGBoost importance metric for this purpose. It measures the relative contribution of splits using each variable.
+
+```{r}
 xgb_importance <- xgb.importance(
   feature_names = features,
   model = xgb_model
@@ -348,11 +324,9 @@ xgb_importance <- xgb.importance(
 kable(xgb_importance, digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# PREDICT PROBABILITIES IN SIPP TEST AND ACS TARGET SAMPLES
-# ============================================================================
+# Predict Probabilities in SIPP Test and ACS Target Samples
 
+```{r}
 test_xgb$gbm_undocu_p <- predict(xgb_model, newdata = dtest)
 acs$gbm_undocu_p <- predict(xgb_model, newdata = dacs)
 
@@ -379,14 +353,11 @@ bind_rows(
   kable(digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# DEFINE COMPARISON QUARTILES USING TARGET-LIKE SIPP TEST SAMPLE
-# ============================================================================
-# Threshold reference sample: SIPP test observations that match the ACS target
-# population: college graduates, employed, ages 22-55.
-# ============================================================================
+# Define Comparison Quartiles Using Target-like SIPP Test Sample
 
+Threshold reference sample: SIPP test observations that match the ACS target population: college graduates, employed, ages 22-55.
+
+```{r}
 sipp_targetlike_test <- test_xgb %>%
   filter(
     college == 1,
@@ -451,15 +422,11 @@ kable(xgb_targetlike_sipp_quartiles, digits = 4)
 kable(xgb_acs_quartiles, digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# DEFINE HIGH-RECALL THRESHOLD USING TARGET-LIKE SIPP TEST SAMPLE
-# ============================================================================
-# This threshold mirrors the cleaned GBM file: it is the lowest predicted
-# probability among the top 75% of true positives in the target-like SIPP test
-# sample.
-# ============================================================================
+# Define High-Recall Threshold Using Target-like SIPP Test Sample
 
+This threshold mirrors the cleaned GBM file: it is the lowest predicted probability among the top 75% of true positives in the target-like SIPP test sample.
+
+```{r}
 top_75_targetlike <- sipp_targetlike_test %>%
   filter(undocu_likely == 1) %>%
   arrange(desc(gbm_undocu_p)) %>%
@@ -479,11 +446,9 @@ tibble(
   kable(digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# MODEL VALIDATION: AUC AND LIFT
-# ============================================================================
+# Model Validation: AUC and Lift
 
+```{r}
 auc_full <- pROC::auc(
   pROC::roc(
     response = test_xgb$undocu_likely,
@@ -517,11 +482,9 @@ xgb_targetlike_lift <- xgb_targetlike_sipp_quartiles %>%
 kable(xgb_targetlike_lift, digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# PROBABILITY DISTRIBUTION CHECK
-# ============================================================================
+# Probability Distribution Check
 
+```{r}
 prob_distribution_check <- bind_rows(
   test_xgb %>%
     mutate(sample = "Full SIPP test") %>%
@@ -548,15 +511,11 @@ prob_distribution_check <- bind_rows(
 kable(prob_distribution_check, digits = 4)
 ```
 
-```{r}
-# ============================================================================
-# EXPORT ACS PREDICTIONS FOR STATA
-# ============================================================================
-# Export only the downstream GBM-named variables expected by the Stata pipeline.
-# Even though the model is XGBoost, the variable names stay gbm_* so that the
-# downstream Stata regression files do not need to change.
-# ============================================================================
+# Export ACS Predictions for Stata
 
+Export only the downstream GBM-named variables expected by the Stata pipeline. Even though the model is XGBoost, the variable names stay gbm\_\* so that the downstream Stata regression files do not need to change.
+
+```{r}
 acs_gbm_export <- acs %>%
   mutate(
     gbm_high_prob = ifelse(gbm_undocu_q == "Q4", 1, 0),
@@ -587,14 +546,11 @@ tibble(
   kable()
 ```
 
-```{r}
-# ============================================================================
-# SAVE MODEL AND METADATA FOR REPRODUCIBILITY
-# ============================================================================
-# These files are optional but useful if later scripts need to load the exact
-# trained model or threshold settings.
-# ============================================================================
+# Save Model and Metadata for Reproducibility
 
+These files are optional but useful if later scripts need to load the exact trained model or threshold settings.
+
+```{r}
 model_metadata <- list(
   model_name = "leading_xgboost",
   threshold_definition = "target-like SIPP test sample: college graduates, employed, ages 22-55",
