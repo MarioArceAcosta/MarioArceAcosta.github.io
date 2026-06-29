@@ -1,3 +1,10 @@
+- title: "Churn Prediction Model and Dashboard"
+  description: "Project involving IBM Telco Churn dataset. Compares Logistic Regression and XGBoost model predictions for churn risk. "
+  path: https://ibmtelcochurn.streamlit.app/
+  image: /media/ibm_churn_streamlit.png
+  date: "2026-06-28"
+  categories: ["Business Intelligence", "Python", "Streamlit", "ML", "PostgreSQL"]
+  
 - title: "Micromobility Traffic of City of Davis/UCD Webscraping"
   description: "Capstone project for STA 220. City of Davis x Eco-Counter bike traffic data webscraping project"
   path: https://github.com/MarioArceAcosta/STA-220-Final-Project
