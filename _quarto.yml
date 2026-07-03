@@ -18,8 +18,6 @@ website:
           
       - text: "Other Work"       # The Header Name (e.g., 'Research', 'Portfolio')
         menu:
-        - href: https://marioarceacosta.shinyapps.io/shiny/
-          text: (In Progress) Shiny Dashboard
         - href: presentations.qmd
           text: Conferences & Presentations
 
