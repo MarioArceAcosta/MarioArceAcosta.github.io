@@ -4,6 +4,7 @@ project:
 
 website:
   title: "Mario Arce Acosta"
+  google-analytics: "G-SXS7GJZXP7"
   navbar:
     right:
       - href: index.qmd
