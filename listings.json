@@ -1,0 +1,18 @@
+[
+  {
+    "listing": "/blog.html",
+    "items": [
+      "/posts/dhs_eda/Data Drift Analysis with CatBoost.html",
+      "/posts/dhs_eda/index.html"
+    ]
+  },
+  {
+    "listing": "/projects.html",
+    "items": [
+      "/leading_xgboost_model.html",
+      "/presentations.html",
+      "/msrip_symposium.html",
+      "/xcite_dashboard.html"
+    ]
+  }
+]
