@@ -6,6 +6,10 @@ image: /media/appam_2025_1.jpg
 description: "Presentations on different stages of research with Dr. Veronica Sovero from the Department of Economics at the University of California, Riverside."
 ---
 
+::: {}
+![**Poster:** APPAM presentation at Hyatt Regency Seattle](/media/appam_2025_1.jpg){group="my-gallery" width="50%" fig-align="center"}
+:::
+
 # 2025 Population Association of America Conference
 
 Washington, D.C. — April 12, 2025

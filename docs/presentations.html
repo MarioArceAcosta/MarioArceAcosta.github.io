@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-28">
+<meta name="dcterms.date" content="2026-09-25">
 <meta name="description" content="Presentations on different stages of research with Dr.&nbsp;Veronica Sovero from the Department of Economics at the University of California, Riverside.">
 
 <title>Conferences &amp; Presentations – Mario Arce Acosta</title>
@@ -46,6 +46,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/bootstrap/bootstrap-846c1cf3362d359a58eb0c247a781ede.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="site_libs/bootstrap/bootstrap-dark-f5d853d94cad0bff2e24c153a9bd4c44.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="site_libs/bootstrap/bootstrap-846c1cf3362d359a58eb0c247a781ede.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -355,7 +358,7 @@ gtag('config', 'G-SXS7GJZXP7', { 'anonymize_ip': true});
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 28, 2026</p>
+      <p class="date">September 25, 2026</p>
     </div>
   </div>
   
@@ -367,6 +370,18 @@ gtag('config', 'G-SXS7GJZXP7', { 'anonymize_ip': true});
 </header>
 
 
+<div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href=".\media/appam_2025_1.jpg" class="lightbox" data-gallery="my-gallery" title="Poster: APPAM presentation at Hyatt Regency Seattle"><img src=".\media/appam_2025_1.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%" alt="Poster: APPAM presentation at Hyatt Regency Seattle"></a></p>
+</figure>
+</div>
+<figcaption><strong>Poster:</strong> APPAM presentation at Hyatt Regency Seattle</figcaption>
+</figure>
+</div>
+</div>
 <section id="population-association-of-america-conference" class="level1">
 <h1>2025 Population Association of America Conference</h1>
 <p>Washington, D.C. — April 12, 2025</p>
@@ -812,6 +827,38 @@ gtag('config', 'G-SXS7GJZXP7', { 'anonymize_ip': true});
   });
   </script>
 </div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 
