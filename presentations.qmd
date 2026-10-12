@@ -6,18 +6,21 @@ image: /media/appam_2025_1.jpg
 description: "Presentations on different stages of research with Dr. Veronica Sovero from the Department of Economics at the University of California, Riverside."
 ---
 
-::: {}
+<div>
+
 ![**Poster:** APPAM presentation at Hyatt Regency Seattle](/media/appam_2025_1.jpg){group="my-gallery" width="50%" fig-align="center"}
-:::
+
+</div>
 
 # 2026 Peter Hall and Bob Shumway Memorial Conference
 
 Davis, CA — May 23, 2026
 
-::: {}
-![Methodology poster presentation at UC Davis](/media/2026_UCD_Stats_Poster.png){group="my-gallery" width="50%" fig-align="center"}
-:::
+<div>
 
+![Methodology poster presentation at UC Davis](/media/2026_UCD_Stats_Poster.png){group="my-gallery" width="50%" fig-align="center"}
+
+</div>
 
 # 2025 Population Association of America Conference
 
@@ -50,8 +53,6 @@ This study estimates the extent of education–occupation mismatch and the assoc
 </iframe>
 
 [<i class="bi bi-file-earmark-pdf"></i> Download PDF](files/APPAM_2025_Presentation.pdf){.btn .btn-primary}
-
-
 
 # 2024 Mind the Gap (MSRIP) UC Riverside summer research symposium
 

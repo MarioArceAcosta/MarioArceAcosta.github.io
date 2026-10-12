@@ -4,7 +4,6 @@ listing:
   contents:
     - leading_xgboost_model.qmd
     - presentations.qmd
-    - msrip_symposium.qmd
     - xcite_dashboard.qmd
     - project_links.yml      # Automatically generates cards for all repos listed inside
   type: grid         # Creates the "Card" look

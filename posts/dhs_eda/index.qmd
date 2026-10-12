@@ -1,23 +1,132 @@
 ---
-title: "Exploratory Data Analysis of DHS Estimates"
-description: "Initial data cleaning, extraction, and analysis of Department of Homeland Security reports."
-author: "Mario Arce Acosta and Dr.Veronica Sovero"
+title: "Estimating Hidden Populations: Comparing Census Data and DHS Baselines"
+description: "Evaluating machine learning imputations of the U.S. undocumented population against official DHS baselines (2009-2019)."
+author: "Mario Arce Acosta and Dr. Veronica Sovero"
 date: "2026-04-29"
-categories: [R, EDA, Data Cleaning]
+categories: [R, EDA, Immigration]
 code-fold: true
-image: "DHS Estimates Comparison by Age and Gender.png" # Save an image in the same folder to show on the blog grid
+image: "DHS Estimates Comparison by Age and Gender.png"
 ---
 
-## The Objective
+::: {callout-important}
+## Key Takeaways (TL;DR)
 
-Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data. The primary objective for this post is to examine the demographic distribution of the DHS estimates from 2009-2019, specifically focusing on the age and gender composition of the undocumented population over the decade.
+**Methodology:** Since the Census (ACS) does not provide information about the immigration status of survey respondents, we trained a machine learning model on a smaller survey (SIPP) to impute undocumented status onto 2009-2019 ACS data.
 
-## Loading the Data
+**Finding:** Benchmarking our estimates of the undocumented population in the U.S. against the official DHS estimates highlights the limitations of machine learning imputation methods, particularly when there is distribution drift in the underlying population characteristics over time. This method overestimates the number of younger undocumented immigrants (ages 18-34) and underestimates the number of older undocumented immigrants (ages 35-54), with the gap between our estimates and DHS estimates widening over time.
+
+:::
+
+## Motivating Challenge
+
+Methodology for estimating hidden populations (e.g. undocumented immigrants or students) has been a topic of debate as improvements are made throughout the last few decades.
+
+Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data. The primary objective for this post is to examine the demographic distribution of the DHS estimates from 2009-2019, specifically focusing on the age and gender composition of the undocumented population over time. 
+
+Our goal is not to get as close to the official DHS estimates (there are simpler methods that result in more accurate aggregated estimates), but rather to assess the robustness of our machine learning method - being able to create estimates of the undocumented population is an interesting application of our research.
+
+## Methodology & Data Pipelines
+
+<div>
+
+![Research Methodology diagram: Overview of sources, machine learning imputation method, data pipeline, and DHS comparisons workflow.](/media/methodology_blog.png){group="my-gallery" fig-align="center" width="95%"}
+
+</div>
+
+### Loading the Data
 
 We'll start by pulling in the summary statistics and estimates from our database and our extracted DHS tables. Data preparation can be described in two steps:
 
-1.  Training machine learning models on cleaned SIPP data to impute undocumented status in the ACS using gradient-boosted trees. This process is identical to what can be found [here](https://marioarceacosta.github.io/leading_model.html).
+1.  Training machine learning models on cleaned SIPP data to impute undocumented status in the ACS using gradient-boosted trees. This process is identical to what can be found [here](https://marioarceacosta.github.io/leading_xgboost_model.html) (and the current repository machine learning code can be found [here](https://github.com/MarioArceAcosta/ML-Causal-Undocu-Research/tree/main/(Step%203)%20Machine%20Learning%20Estimations)).
 2.  Creating a high-level snapshot of this data to be uploaded via SQL to Supabase for future use, alongside our extracted official DHS demographic tables.
+
+### Imputed Distribution
+Since the American Community Survey (ACS) does not directly ask about immigration status, we trained a machine learning algorithm on the demographic patterns in the 2008 Survey of Income and Program Participation (SIPP) Wave 2 which did ask about immigration status, and then we applied the trained machine learning models to impute undocumented status within the ACS data for a later analysis (often referred to as a *downstream analysis).*
+
+Because the demographic patterns of undocumented immigrants from 2008 differ from the demographic patterns of undocumented immigrants from the years 2009-2019, we need to assess how robust our machine learning models are to this change (referred to as *covariate* or *distribution drift*). To evaluate distribution drift, we need to compare a ground truth distribution with our estimated distribution.
+
+:::{.callout-note}
+**Note:** We later exclude the *55+* age bracket later in our analysis for visual purposes.
+:::
+
+```{r}
+#| eval: false
+#| label: etl-prep
+#| message: false
+#| warning: false
+library(readr)
+library(tidyverse)
+library(DBI)
+library(RPostgres)
+
+# 1. Feature engineering and aggregation
+
+ACS_foreign_gbm <- read.csv("G:/Shared drives/Undocu Research/Data/ACS_foreign_gbm.csv")
+
+acs_summary <- ACS_foreign_gbm %>%
+  filter(bpl_foreign == 1) %>% 
+  
+  mutate(
+    age_bracket = case_when(
+      age < 18 ~ "Under 18",
+      age >= 18 & age < 25 ~ "18-24",
+      age >= 25 & age < 35 ~ "25-34",
+      age >= 35 & age < 45 ~ "35-44",
+      age >= 45 & age < 55 ~ "45-54",
+      age >= 55 ~ "55+",
+      TRUE ~ "Unknown"
+    )
+  ) %>%
+  filter(age_bracket != "Under 18") %>%
+  group_by(
+    year, 
+    statefip, 
+    bpld, 
+    age_bracket, 
+    fem
+  ) %>%
+  summarise(
+    # summing 'perwt' now gives us the Total Foreign-Born Population.
+    total_foreign_born_pop = sum(perwt, na.rm = TRUE),
+    
+    # 1. High Recall Estimates
+    high_recall_count = sum(perwt[gbm_high_recall == TRUE], na.rm = TRUE),
+    high_recall_rate = high_recall_count / total_foreign_born_pop,
+    
+    # 2. High Probability Estimates
+    high_prob_count = sum(perwt[gbm_high_prob == TRUE], na.rm = TRUE),
+    high_prob_rate = high_prob_count / total_foreign_born_pop,
+    
+    # 3. Low Probability Estimates
+    low_prob_count = sum(perwt[gbm_low_prob == TRUE], na.rm = TRUE),
+    low_prob_rate = low_prob_count / total_foreign_born_pop,
+    
+    .groups = 'drop'
+  )
+
+# 2. Push to supabase
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "aws-1-us-east-2.pooler.supabase.com", 
+  port = 6543,
+  user = "postgres.dpuhypyqwupzesfkiplu",
+  password = Sys.getenv("SUPABASE_PWD")
+)
+
+# Write the summary table to database
+dbWriteTable(con, "acs_foreign_summary", acs_summary, overwrite = TRUE)
+
+dbDisconnect(con)
+```
+
+### DHS Distribution (Baseline)
+
+The DHS estimates of undocumented immigrants in the United States are often taken to be some of the most credible and officially recognized estimates. For this reason, we manually translate the estimates found in DHS report series - *Estimates of the Illegal Alien Population Residing in the United States -* into CSV files (public [DHS database](https://ohss.dhs.gov/topics/immigration/illegal/population-estimates)). Due to limited data consistency and granularity across the SIPP and ACS, we only extract and load the DHS total estimates and breakdowns by age and gender. For this same reason, as well as because of our sample characteristics, we exclude the *Under 18* age bracket in the DHS datasets.
+
+:::{.callout-note}
+**Data Gap Note:** DHS did not produce estimates for the year of **2013** due to a lack of data.
+:::
 
 ```{r}
 #| label: data-prep
@@ -28,7 +137,7 @@ library(tidyverse)
 library(DBI)
 library(RPostgres)
 
-# --- 1. FETCH ACS DATA ---
+# 1. Fetch ACS data from Supabase database
 con <- dbConnect(
   RPostgres::Postgres(),
   dbname = "postgres",
@@ -41,7 +150,7 @@ con <- dbConnect(
 acs_foreign_summary <- dbGetQuery(con, "SELECT * FROM acs_foreign_summary")
 dbDisconnect(con)
 
-# --- 2. LOAD DHS CSVs ---
+# 2. Load DHS CSV data
 dhs_male <- read_csv("Unauthorized Immigrant Population Estimates (Male) 2009-2022 - Unauthorized Immigrant Population Estimates (Male) 2009-2022.csv") %>%
   filter(Year >= 2009 & Year <= 2019) %>%
   rename(year = Year, age_bracket = Age, population_count = Count) %>%
@@ -59,10 +168,11 @@ dhs_combined <- bind_rows(dhs_male, dhs_female) %>%
   ) %>%
   filter(age_bracket != "Under 18", age_bracket != "Total", !is.na(year))
 
-# --- 3. PREP ACS GENDER DATA ---
+# 3. Prep ACS gender data
 acs_combined <- acs_foreign_summary %>%
-  # Translate ACS sex codes to match DHS text
+  # Change ACS sex codes to match DHS
   mutate(
+    age_bracket = ifelse(age_bracket == "55+", "55 And Over", age_bracket),
     gender = case_when(
       fem == 1 ~ "Female",
       fem == 0 ~ "Male",
@@ -71,32 +181,30 @@ acs_combined <- acs_foreign_summary %>%
   ) %>%
   filter(age_bracket != "Under 18", gender != "Unknown", !is.na(year)) %>%
   group_by(year, age_bracket, gender) %>%
-  #Change this back to recall 
   summarise(population_count = sum(high_recall_count, na.rm = TRUE), .groups = "drop") %>%
   mutate(dataset = "Imputed ACS")
 
 
 
-# --- 4. MERGE AND APPLY THE OFFSET TRICK ---
+# 4. Merge and offset
 plot_data <- bind_rows(dhs_combined, acs_combined) %>%
   mutate(
     age_bracket = factor(age_bracket, levels = c("18-24", "25-34", "35-44", "45-54", "55 And Over")),
     gender = factor(gender, levels = c("Male", "Female")),
     
-    # Create the interaction grouping for colors
-    fill_group = paste(gender, dataset, sep = " - "),
     
-    # THE OFFSET TRICK: Shift ACS slightly left, DHS slightly right
+    fill_group = paste(gender, dataset, sep = " - "),
+  
     age_numeric = as.numeric(age_bracket),
     plot_x = ifelse(dataset == "Imputed ACS", age_numeric - 0.2, age_numeric + 0.2)
   )
 ```
 
-## Age & Gender Composition
+## Visualizing Demographic Trends
 
-To establish a solid demographic baseline, we examine the age and gender composition of the undocumented population reported by DHS over the years 2009-2019. By stacking the male and female estimates, we can simultaneously observe the total size of each age bracket alongside its internal gender distribution.
+To establish a demographic baseline, we examine the age and gender composition of the undocumented population reported by DHS over the years 2009-2019. By stacking the male and female estimates, we can observe the total size of each age bracket alongside its gender distribution.
 
-### Faceted/Overview Plots of DHS Demographics
+### Faceted/Overview Plots of DHS Demographics (Age & Gender)
 
 ```{r}
 #| label: age-gender-faceted
@@ -110,19 +218,16 @@ library(scales)
 library(plotly)
 
 p_comparison_faceted <- ggplot(plot_data, aes(x = plot_x, y = population_count, fill = fill_group)) +
-  # Because the X coordinates are physically separated, "stack" will only stack 
-  # Male on top of Female within the same dataset!
   geom_col(position = "stack", color = "black", alpha = 0.9, width = 0.35) +
   
   # Assign distinct colors to distinguish ACS from DHS visually
   scale_fill_manual(values = c(
-    "Male - DHS Official"   = "#2471A3", # Dark Blue
-    "Female - DHS Official" = "#7FB3D5", # Dark Red
-    "Male - Imputed ACS"   = "#BA4A00", # Light Blue
-    "Female - Imputed ACS" = "#F5B041"  # Light Red
+    "Male - DHS Official"   = "#2471A3",
+    "Female - DHS Official" = "#7FB3D5",
+    "Male - Imputed ACS"   = "#BA4A00", 
+    "Female - Imputed ACS" = "#F5B041"
   )) +
   
-  # Map the numeric X-axis back to the categorical Age Bracket text
   scale_x_continuous(
     breaks = 1:5,
     labels = levels(plot_data$age_bracket)
@@ -142,19 +247,18 @@ p_comparison_faceted <- ggplot(plot_data, aes(x = plot_x, y = population_count, 
     panel.border = element_rect(color = "gray80", fill = NA),
     legend.position = "bottom",
     
-    # 2. Force extra space between the facet panels
     panel.spacing = unit(2, "lines"), 
-    # Make the year titles a bit bolder to stand out
     strip.text = element_text(face = "bold", margin = margin(b = 10, t = 10)) 
   ) +
   facet_wrap(~ year, ncol = 3)
 
-# 3. Give the ggplotly conversion a slight margin push for its own legend
 ggplotly(p_comparison_faceted, tooltip = c("fill", "y")) %>%
   layout(legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.1), margin = list(b = 60))
 ```
 
 ### Year-by-Year Interactive Composition
+
+You can use the interactive chart below with the slider to track demographic shifts from 2009 to 2019. By pressing play, you can observe how the ACS estimates compare against the DHS estimates.
 
 ```{r}
 #| label: age-gender-interactive
@@ -190,7 +294,6 @@ p_interactive_comparison <- plot_ly(
       x = 0.5 
     ),
     
-    # Map the numeric Plotly axis back to text labels
     xaxis = list(
       title = "<b>Age Bracket</b>",
       tickvals = 1:5,
@@ -209,7 +312,7 @@ p_interactive_comparison <- plot_ly(
       ) * 1.1)
     ),
     
-    # 1. Push the legend further down (from -0.25 to -0.5 or -0.6)
+    
     legend = list(
       orientation = "h",  
       x = 0.5,            
@@ -217,7 +320,6 @@ p_interactive_comparison <- plot_ly(
       y = -0.5            
     ),
     
-    # 2. Increase the bottom margin significantly (from 100 to 160)
     margin = list(b = 160) 
   ) %>%
   animation_opts(
@@ -233,6 +335,24 @@ p_interactive_comparison <- plot_ly(
 p_interactive_comparison
 ```
 
+## Data Limitations
+
+Comparing our ACS imputed estimates with the DHS estimates for the years 2009-2019 and across demographic categories revealed a known and important issue: distribution drift. [This report by the Pew Research Center](https://www.pewresearch.org/race-and-ethnicity/2025/08/21/u-s-unauthorized-immigrant-population-reached-a-record-14-million-in-2023/) neatly explains how the demographic characteristics of undocumented immigrants in the United States have changed over the years. An example is the fact that the proportion of undocumented immigrants whose origin is Mexico has gone down over the years.
+
+Since the machine learning imputation method learns the demographic patterns from a survey in 2008, and since the demographic characteristics have changed from 2009 to 2019, this method will incorrectly assign probabilities of undocumented status and imputations. This phenomenon is a common obstacle in machine learning for obtaining accurate classifications, and it is an obstacle that is difficult to resolve given the lack of publicly available data where vulnerable populations (i.e. undocumented immigrants) have self-reported information that could be used in social science.
+
+### Key Findings
+
+So, the result of this distribution drift is that we have:
+
+1.  Overestimated the number of younger undocumented immigrants (age brackets 18-24 and 25-34).
+
+2.  Underestimated the number of older undocumented immigrants (age brackets 35-44 and 45-54).
+
+It is important to also note that this gap between our estimates and the DHS estimates gets larger throughout the years. This may reflect how the demographic distribution of undocumented immigrants in the United States has changed since 2008, which would explain the deteriorating accuracy of our estimates since the model operates on a snapshot of data from 2008.
+
 ## Summary
 
-From these simple comparisons we can notice that our GBM imputations appears to overestimate the number of undocumented immigrants in age brackets 18-24 and 25-34, and underestimate undocumented immigrants in age brackets 35-44 and 45-54.
+For researchers and policymakers in higher education, where the ages may typically range from 18-24 for college students and 25-34 for recent graduates, this method may be useful for estimating the undocumented population. However, it also comes with data limitations since conclusions drawn from downstream analyses based on this method may be misattributing correlations and effects of policy based on the characteristics of the undocumented population.
+
+Though this conclusion is disappointing for social science and other fields of research (particularly in trying to inform policy), it may be reassuring to a population of people that may or may not want their immigration status to be identified in publicly available survey databases.
