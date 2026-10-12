@@ -14,14 +14,13 @@ image: "DHS Estimates Comparison by Age and Gender.png"
 **Methodology:** Since the Census (ACS) does not provide information about the immigration status of survey respondents, we trained a machine learning model on a smaller survey (SIPP) to impute undocumented status onto 2009-2019 ACS data.
 
 **Finding:** Benchmarking our estimates of the undocumented population in the U.S. against the official DHS estimates highlights the limitations of machine learning imputation methods, particularly when there is distribution drift in the underlying population characteristics over time. This method overestimates the number of younger undocumented immigrants (ages 18-34) and underestimates the number of older undocumented immigrants (ages 35-54), with the gap between our estimates and DHS estimates widening over time.
-
 :::
 
 ## Motivating Challenge
 
 Methodology for estimating hidden populations (e.g. undocumented immigrants or students) has been a topic of debate as improvements are made throughout the last few decades.
 
-Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data. The primary objective for this post is to examine the demographic distribution of the DHS estimates from 2009-2019, specifically focusing on the age and gender composition of the undocumented population over time. 
+Before deploying any advanced modeling, it is critical to understand the shape, missingness, and distributions of the raw Department of Homeland Security data. The primary objective for this post is to examine the demographic distribution of the DHS estimates from 2009-2019, specifically focusing on the age and gender composition of the undocumented population over time.
 
 Our goal is not to get as close to the official DHS estimates (there are simpler methods that result in more accurate aggregated estimates), but rather to assess the robustness of our machine learning method - being able to create estimates of the undocumented population is an interesting application of our research.
 
@@ -41,11 +40,12 @@ We'll start by pulling in the summary statistics and estimates from our database
 2.  Creating a high-level snapshot of this data to be uploaded via SQL to Supabase for future use, alongside our extracted official DHS demographic tables.
 
 ### Imputed Distribution
+
 Since the American Community Survey (ACS) does not directly ask about immigration status, we trained a machine learning algorithm on the demographic patterns in the 2008 Survey of Income and Program Participation (SIPP) Wave 2 which did ask about immigration status, and then we applied the trained machine learning models to impute undocumented status within the ACS data for a later analysis (often referred to as a *downstream analysis).*
 
 Because the demographic patterns of undocumented immigrants from 2008 differ from the demographic patterns of undocumented immigrants from the years 2009-2019, we need to assess how robust our machine learning models are to this change (referred to as *covariate* or *distribution drift*). To evaluate distribution drift, we need to compare a ground truth distribution with our estimated distribution.
 
-:::{.callout-note}
+::: callout-note
 **Note:** We later exclude the *55+* age bracket later in our analysis for visual purposes.
 :::
 
@@ -124,7 +124,7 @@ dbDisconnect(con)
 
 The DHS estimates of undocumented immigrants in the United States are often taken to be some of the most credible and officially recognized estimates. For this reason, we manually translate the estimates found in DHS report series - *Estimates of the Illegal Alien Population Residing in the United States -* into CSV files (public [DHS database](https://ohss.dhs.gov/topics/immigration/illegal/population-estimates)). Due to limited data consistency and granularity across the SIPP and ACS, we only extract and load the DHS total estimates and breakdowns by age and gender. For this same reason, as well as because of our sample characteristics, we exclude the *Under 18* age bracket in the DHS datasets.
 
-:::{.callout-note}
+::: callout-note
 **Data Gap Note:** DHS did not produce estimates for the year of **2013** due to a lack of data.
 :::
 
@@ -341,7 +341,7 @@ Comparing our ACS imputed estimates with the DHS estimates for the years 2009-20
 
 Since the machine learning imputation method learns the demographic patterns from a survey in 2008, and since the demographic characteristics have changed from 2009 to 2019, this method will incorrectly assign probabilities of undocumented status and imputations. This phenomenon is a common obstacle in machine learning for obtaining accurate classifications, and it is an obstacle that is difficult to resolve given the lack of publicly available data where vulnerable populations (i.e. undocumented immigrants) have self-reported information that could be used in social science.
 
-### Key Findings
+## Key Findings
 
 So, the result of this distribution drift is that we have:
 
@@ -356,3 +356,17 @@ It is important to also note that this gap between our estimates and the DHS est
 For researchers and policymakers in higher education, where the ages may typically range from 18-24 for college students and 25-34 for recent graduates, this method may be useful for estimating the undocumented population. However, it also comes with data limitations since conclusions drawn from downstream analyses based on this method may be misattributing correlations and effects of policy based on the characteristics of the undocumented population.
 
 Though this conclusion is disappointing for social science and other fields of research (particularly in trying to inform policy), it may be reassuring to a population of people that may or may not want their immigration status to be identified in publicly available survey databases.
+
+## Glossary of Terms
+
+-   **Imputation:** A statistical technique used to replace missing data with substituted values.
+-   **Gradient-Boosted Trees (also known as Gradient-Boosted Machine or GBM):** A machine learning algorithm that builds decision trees sequentially, learning from the mistakes of previous trees to improve prediction accuracy.
+-   **Distribution Drift (Covariate Shift):** A phenomenon where the statistical properties of a target variable change over time, reducing the accuracy of predictive models trained on older data.
+-   **Person Weights (perwt):** A statistical adjustment used in census data to indicate how many individuals in the actual population a single survey respondent represents.
+
+## Data Sources & References
+
+1.  **American Community Survey (ACS) 2009–2019**
+2.  **Survey of Income and Program Participation (SIPP) 2008, Wave 2**
+3.  **Department of Homeland Security (DHS):** [Estimates of the Unauthorized Immigrant Population Residing in the United States](https://ohss.dhs.gov/topics/immigration/illegal/population-estimates).
+4.  **Pew Research Center (2025):** [U.S. unauthorized immigrant population reached a record 14 million in 2023](https://www.pewresearch.org/race-and-ethnicity/2025/08/21/u-s-unauthorized-immigrant-population-reached-a-record-14-million-in-2023/).
