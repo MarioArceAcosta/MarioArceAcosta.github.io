@@ -355,7 +355,7 @@ It is important to also note that this gap between our estimates and the DHS est
 
 For researchers and policymakers in higher education, where the ages may typically range from 18-24 for college students and 25-34 for recent graduates, this method may be useful for estimating the undocumented population. However, it also comes with data limitations since conclusions drawn from downstream analyses based on this method may be misattributing correlations and effects of policy based on the characteristics of the undocumented population.
 
-Though this conclusion is disappointing for social science and other fields of research (particularly in trying to inform policy), it may be reassuring to a population of people that may or may not want their immigration status to be identified in publicly available survey databases.
+Though this conclusion is disappointing for social science and other fields of research (particularly in trying to inform policy), it may be reassuring to a population of people that may not want their immigration status to be identified in publicly available survey databases.
 
 ## Glossary of Terms
 
